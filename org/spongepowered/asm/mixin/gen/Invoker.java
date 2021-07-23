@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.mixin.gen;
 
 import java.lang.annotation.ElementType;
@@ -5,10 +8,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
+@Target(value={ElementType.METHOD})
+@Retention(value=RetentionPolicy.RUNTIME)
 public @interface Invoker {
-  String value() default "";
-  
-  boolean remap() default true;
+    public String value() default "";
+
+    public boolean remap() default true;
 }
+

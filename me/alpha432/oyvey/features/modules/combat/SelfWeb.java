@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.features.modules.combat;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
@@ -20,126 +23,112 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
-public class SelfWeb extends Module {
-  public Setting<Boolean> alwayson = register(new Setting("AlwaysOn", Boolean.valueOf(false)));
-  
-  public Setting<Boolean> rotate = register(new Setting("Rotate", Boolean.valueOf(true)));
-  
-  public Setting<Integer> webRange = register(new Setting("EnemyRange", Integer.valueOf(4), Integer.valueOf(0), Integer.valueOf(8)));
-  
-  int new_slot;
-  
-  boolean sneak;
-  
-  public SelfWeb() {
-    super("SelfWeb", "Places webs at your feet", Module.Category.COMBAT, true, false, false);
-    this.new_slot = -1;
-    this.sneak = false;
-  }
-  
-  public void enable() {
-    if (mc.player != null) {
-      this.new_slot = find_in_hotbar();
-      if (this.new_slot == -1)
-        Command.sendMessage(ChatFormatting.RED + "< " + ChatFormatting.GRAY + "SelfWeb" + ChatFormatting.RED + "> " + ChatFormatting.DARK_RED + "No webs in hotbar!"); 
-    } 
-  }
-  
-  public void disable() {
-    if (mc.player != null && 
-      this.sneak) {
-      mc.player.connection.sendPacket((Packet)new CPacketEntityAction((Entity)mc.player, CPacketEntityAction.Action.STOP_SNEAKING));
-      this.sneak = false;
-    } 
-  }
-  
-  public void onUpdate() {
-    if (mc.player == null)
-      return; 
-    if (((Boolean)this.alwayson.getValue()).booleanValue()) {
-      EntityPlayer target = find_closest_target();
-      if (target == null)
-        return; 
-      if (mc.player.getDistance((Entity)target) < ((Integer)this.webRange.getValue()).intValue() && is_surround()) {
-        int last_slot = mc.player.inventory.currentItem;
-        mc.player.inventory.currentItem = this.new_slot;
-        mc.playerController.updateController();
-        place_blocks(WorldUtil.GetLocalPlayerPosFloored());
-        mc.player.inventory.currentItem = last_slot;
-      } 
-    } else {
-      int last_slot = mc.player.inventory.currentItem;
-      mc.player.inventory.currentItem = this.new_slot;
-      mc.playerController.updateController();
-      place_blocks(WorldUtil.GetLocalPlayerPosFloored());
-      mc.player.inventory.currentItem = last_slot;
-      disable();
-    } 
-  }
-  
-  public EntityPlayer find_closest_target() {
-    if (mc.world.playerEntities.isEmpty())
-      return null; 
-    EntityPlayer closestTarget = null;
-    for (EntityPlayer target : mc.world.playerEntities) {
-      if (target == mc.player)
-        continue; 
-      if (EntityUtil.isLiving((Entity)target))
-        continue; 
-      if (target.getHealth() <= 0.0F)
-        continue; 
-      if (closestTarget != null && 
-        mc.player.getDistance((Entity)target) > mc.player.getDistance((Entity)closestTarget))
-        continue; 
-      closestTarget = target;
-    } 
-    return closestTarget;
-  }
-  
-  private int find_in_hotbar() {
-    for (int i = 0; i < 9; i++) {
-      ItemStack stack = mc.player.inventory.getStackInSlot(i);
-      if (stack.getItem() == Item.getItemById(30))
-        return i; 
-    } 
-    return -1;
-  }
-  
-  private boolean is_surround() {
-    BlockPos player_block = WorldUtil.GetLocalPlayerPosFloored();
-    return (mc.world.getBlockState(player_block.east()).getBlock() != Blocks.AIR && mc.world
-      .getBlockState(player_block.west()).getBlock() != Blocks.AIR && mc.world
-      .getBlockState(player_block.north()).getBlock() != Blocks.AIR && mc.world
-      .getBlockState(player_block.south()).getBlock() != Blocks.AIR && mc.world
-      .getBlockState(player_block).getBlock() == Blocks.AIR);
-  }
-  
-  private void place_blocks(BlockPos pos) {
-    if (!mc.world.getBlockState(pos).getMaterial().isReplaceable())
-      return; 
-    if (!BlockInteractionUtil.checkForNeighbours(pos))
-      return; 
-    EnumFacing[] arrayOfEnumFacing;
-    int i;
-    byte b;
-    for (arrayOfEnumFacing = EnumFacing.values(), i = arrayOfEnumFacing.length, b = 0; b < i; ) {
-      EnumFacing side = arrayOfEnumFacing[b];
-      BlockPos neighbor = pos.offset(side);
-      EnumFacing side2 = side.getOpposite();
-      if (!BlockInteractionUtil.canBeClicked(neighbor)) {
-        b++;
-        continue;
-      } 
-      if (BlockInteractionUtil.blackList.contains(mc.world.getBlockState(neighbor).getBlock())) {
-        mc.player.connection.sendPacket((Packet)new CPacketEntityAction((Entity)mc.player, CPacketEntityAction.Action.START_SNEAKING));
-        this.sneak = true;
-      } 
-      Vec3d hitVec = (new Vec3d((Vec3i)neighbor)).add(0.5D, 0.5D, 0.5D).add((new Vec3d(side2.getDirectionVec())).scale(0.5D));
-      if (((Boolean)this.rotate.getValue()).booleanValue())
-        BlockInteractionUtil.faceVectorPacketInstant(hitVec); 
-      mc.playerController.processRightClickBlock(mc.player, mc.world, neighbor, side2, hitVec, EnumHand.MAIN_HAND);
-      mc.player.swingArm(EnumHand.MAIN_HAND);
-      return;
-    } 
-  }
+public class SelfWeb
+extends Module {
+    public Setting<Boolean> alwayson = this.register(new Setting<Boolean>("AlwaysOn", false));
+    public Setting<Boolean> rotate = this.register(new Setting<Boolean>("Rotate", true));
+    public Setting<Integer> webRange = this.register(new Setting<Integer>("EnemyRange", 4, 0, 8));
+    int new_slot = -1;
+    boolean sneak = false;
+
+    public SelfWeb() {
+        super("SelfWeb", "Places webs at your feet", Module.Category.COMBAT, true, false, false);
+    }
+
+    @Override
+    public void enable() {
+        if (SelfWeb.mc.player != null) {
+            this.new_slot = this.find_in_hotbar();
+            if (this.new_slot == -1) {
+                Command.sendMessage(ChatFormatting.RED + "< " + ChatFormatting.GRAY + "SelfWeb" + ChatFormatting.RED + "> " + ChatFormatting.DARK_RED + "No webs in hotbar!");
+            }
+        }
+    }
+
+    @Override
+    public void disable() {
+        if (SelfWeb.mc.player != null && this.sneak) {
+            SelfWeb.mc.player.connection.sendPacket((Packet)new CPacketEntityAction((Entity)SelfWeb.mc.player, CPacketEntityAction.Action.STOP_SNEAKING));
+            this.sneak = false;
+        }
+    }
+
+    @Override
+    public void onUpdate() {
+        if (SelfWeb.mc.player == null) {
+            return;
+        }
+        if (this.alwayson.getValue().booleanValue()) {
+            EntityPlayer target = this.find_closest_target();
+            if (target == null) {
+                return;
+            }
+            if (SelfWeb.mc.player.getDistance((Entity)target) < (float)this.webRange.getValue().intValue() && this.is_surround()) {
+                int last_slot = SelfWeb.mc.player.inventory.currentItem;
+                SelfWeb.mc.player.inventory.currentItem = this.new_slot;
+                SelfWeb.mc.playerController.updateController();
+                this.place_blocks(WorldUtil.GetLocalPlayerPosFloored());
+                SelfWeb.mc.player.inventory.currentItem = last_slot;
+            }
+        } else {
+            int last_slot = SelfWeb.mc.player.inventory.currentItem;
+            SelfWeb.mc.player.inventory.currentItem = this.new_slot;
+            SelfWeb.mc.playerController.updateController();
+            this.place_blocks(WorldUtil.GetLocalPlayerPosFloored());
+            SelfWeb.mc.player.inventory.currentItem = last_slot;
+            this.disable();
+        }
+    }
+
+    public EntityPlayer find_closest_target() {
+        if (SelfWeb.mc.world.playerEntities.isEmpty()) {
+            return null;
+        }
+        EntityPlayer closestTarget = null;
+        for (EntityPlayer target : SelfWeb.mc.world.playerEntities) {
+            if (target == SelfWeb.mc.player || EntityUtil.isLiving((Entity)target) || target.getHealth() <= 0.0f || closestTarget != null && SelfWeb.mc.player.getDistance((Entity)target) > SelfWeb.mc.player.getDistance((Entity)closestTarget)) continue;
+            closestTarget = target;
+        }
+        return closestTarget;
+    }
+
+    private int find_in_hotbar() {
+        for (int i = 0; i < 9; ++i) {
+            ItemStack stack = SelfWeb.mc.player.inventory.getStackInSlot(i);
+            if (stack.getItem() != Item.getItemById((int)30)) continue;
+            return i;
+        }
+        return -1;
+    }
+
+    private boolean is_surround() {
+        BlockPos player_block = WorldUtil.GetLocalPlayerPosFloored();
+        return SelfWeb.mc.world.getBlockState(player_block.east()).getBlock() != Blocks.AIR && SelfWeb.mc.world.getBlockState(player_block.west()).getBlock() != Blocks.AIR && SelfWeb.mc.world.getBlockState(player_block.north()).getBlock() != Blocks.AIR && SelfWeb.mc.world.getBlockState(player_block.south()).getBlock() != Blocks.AIR && SelfWeb.mc.world.getBlockState(player_block).getBlock() == Blocks.AIR;
+    }
+
+    private void place_blocks(BlockPos pos) {
+        if (!SelfWeb.mc.world.getBlockState(pos).getMaterial().isReplaceable()) {
+            return;
+        }
+        if (!BlockInteractionUtil.checkForNeighbours(pos)) {
+            return;
+        }
+        for (EnumFacing side : EnumFacing.values()) {
+            BlockPos neighbor = pos.offset(side);
+            EnumFacing side2 = side.getOpposite();
+            if (!BlockInteractionUtil.canBeClicked(neighbor)) continue;
+            if (BlockInteractionUtil.blackList.contains(SelfWeb.mc.world.getBlockState(neighbor).getBlock())) {
+                SelfWeb.mc.player.connection.sendPacket((Packet)new CPacketEntityAction((Entity)SelfWeb.mc.player, CPacketEntityAction.Action.START_SNEAKING));
+                this.sneak = true;
+            }
+            Vec3d hitVec = new Vec3d((Vec3i)neighbor).add(0.5, 0.5, 0.5).add(new Vec3d(side2.getDirectionVec()).scale(0.5));
+            if (this.rotate.getValue().booleanValue()) {
+                BlockInteractionUtil.faceVectorPacketInstant(hitVec);
+            }
+            SelfWeb.mc.playerController.processRightClickBlock(SelfWeb.mc.player, SelfWeb.mc.world, neighbor, side2, hitVec, EnumHand.MAIN_HAND);
+            SelfWeb.mc.player.swingArm(EnumHand.MAIN_HAND);
+            return;
+        }
+    }
 }
+

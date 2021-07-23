@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.tools.obfuscation.mapping.mcp;
 
 import com.google.common.base.Strings;
@@ -15,46 +18,52 @@ import org.spongepowered.asm.obfuscation.mapping.common.MappingMethod;
 import org.spongepowered.asm.obfuscation.mapping.mcp.MappingFieldSrg;
 import org.spongepowered.tools.obfuscation.mapping.common.MappingProvider;
 
-public class MappingProviderSrg extends MappingProvider {
-  public MappingProviderSrg(Messager messager, Filer filer) {
-    super(messager, filer);
-  }
-  
-  public void read(final File input) throws IOException {
-    final BiMap<String, String> packageMap = this.packageMap;
-    final BiMap<String, String> classMap = this.classMap;
-    final BiMap<MappingField, MappingField> fieldMap = this.fieldMap;
-    final BiMap<MappingMethod, MappingMethod> methodMap = this.methodMap;
-    Files.readLines(input, Charset.defaultCharset(), new LineProcessor<String>() {
-          public String getResult() {
-            return null;
-          }
-          
-          public boolean processLine(String line) throws IOException {
-            if (Strings.isNullOrEmpty(line) || line.startsWith("#"))
-              return true; 
-            String type = line.substring(0, 2);
-            String[] args = line.substring(4).split(" ");
-            if (type.equals("PK")) {
-              packageMap.forcePut(args[0], args[1]);
-            } else if (type.equals("CL")) {
-              classMap.forcePut(args[0], args[1]);
-            } else if (type.equals("FD")) {
-              fieldMap.forcePut((new MappingFieldSrg(args[0])).copy(), (new MappingFieldSrg(args[1])).copy());
-            } else if (type.equals("MD")) {
-              methodMap.forcePut(new MappingMethod(args[0], args[1]), new MappingMethod(args[2], args[3]));
-            } else {
-              throw new MixinException("Invalid SRG file: " + input);
-            } 
-            return true;
-          }
+public class MappingProviderSrg
+extends MappingProvider {
+    public MappingProviderSrg(Messager messager, Filer filer) {
+        super(messager, filer);
+    }
+
+    @Override
+    public void read(final File input) throws IOException {
+        final BiMap packageMap = this.packageMap;
+        final BiMap classMap = this.classMap;
+        final BiMap fieldMap = this.fieldMap;
+        final BiMap methodMap = this.methodMap;
+        Files.readLines((File)input, (Charset)Charset.defaultCharset(), (LineProcessor)new LineProcessor<String>(){
+
+            public String getResult() {
+                return null;
+            }
+
+            public boolean processLine(String line) throws IOException {
+                if (Strings.isNullOrEmpty((String)line) || line.startsWith("#")) {
+                    return true;
+                }
+                String type = line.substring(0, 2);
+                String[] args = line.substring(4).split(" ");
+                if (type.equals("PK")) {
+                    packageMap.forcePut((Object)args[0], (Object)args[1]);
+                } else if (type.equals("CL")) {
+                    classMap.forcePut((Object)args[0], (Object)args[1]);
+                } else if (type.equals("FD")) {
+                    fieldMap.forcePut((Object)new MappingFieldSrg(args[0]).copy(), (Object)new MappingFieldSrg(args[1]).copy());
+                } else if (type.equals("MD")) {
+                    methodMap.forcePut((Object)new MappingMethod(args[0], args[1]), (Object)new MappingMethod(args[2], args[3]));
+                } else {
+                    throw new MixinException("Invalid SRG file: " + input);
+                }
+                return true;
+            }
         });
-  }
-  
-  public MappingField getFieldMapping(MappingField field) {
-    MappingFieldSrg mappingFieldSrg;
-    if (field.getDesc() != null)
-      mappingFieldSrg = new MappingFieldSrg(field); 
-    return (MappingField)this.fieldMap.get(mappingFieldSrg);
-  }
+    }
+
+    @Override
+    public MappingField getFieldMapping(MappingField field) {
+        if (field.getDesc() != null) {
+            field = new MappingFieldSrg(field);
+        }
+        return (MappingField)this.fieldMap.get((Object)field);
+    }
 }
+

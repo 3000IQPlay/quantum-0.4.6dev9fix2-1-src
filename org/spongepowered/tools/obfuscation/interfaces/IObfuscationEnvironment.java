@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.tools.obfuscation.interfaces;
 
 import java.util.Collection;
@@ -7,23 +10,24 @@ import org.spongepowered.asm.obfuscation.mapping.common.MappingMethod;
 import org.spongepowered.tools.obfuscation.mapping.IMappingConsumer;
 
 public interface IObfuscationEnvironment {
-  MappingMethod getObfMethod(MemberInfo paramMemberInfo);
-  
-  MappingMethod getObfMethod(MappingMethod paramMappingMethod);
-  
-  MappingMethod getObfMethod(MappingMethod paramMappingMethod, boolean paramBoolean);
-  
-  MappingField getObfField(MemberInfo paramMemberInfo);
-  
-  MappingField getObfField(MappingField paramMappingField);
-  
-  MappingField getObfField(MappingField paramMappingField, boolean paramBoolean);
-  
-  String getObfClass(String paramString);
-  
-  MemberInfo remapDescriptor(MemberInfo paramMemberInfo);
-  
-  String remapDescriptor(String paramString);
-  
-  void writeMappings(Collection<IMappingConsumer> paramCollection);
+    public MappingMethod getObfMethod(MemberInfo var1);
+
+    public MappingMethod getObfMethod(MappingMethod var1);
+
+    public MappingMethod getObfMethod(MappingMethod var1, boolean var2);
+
+    public MappingField getObfField(MemberInfo var1);
+
+    public MappingField getObfField(MappingField var1);
+
+    public MappingField getObfField(MappingField var1, boolean var2);
+
+    public String getObfClass(String var1);
+
+    public MemberInfo remapDescriptor(MemberInfo var1);
+
+    public String remapDescriptor(String var1);
+
+    public void writeMappings(Collection<IMappingConsumer> var1);
 }
+

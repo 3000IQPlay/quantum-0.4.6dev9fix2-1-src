@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.mixin.transformer.meta;
 
 import java.lang.annotation.ElementType;
@@ -5,10 +8,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
+@Target(value={ElementType.METHOD})
+@Retention(value=RetentionPolicy.RUNTIME)
 public @interface MixinMerged {
-  String mixin();
-  
-  int priority();
+    public String mixin();
+
+    public int priority();
 }
+

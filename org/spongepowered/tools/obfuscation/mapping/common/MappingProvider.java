@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.tools.obfuscation.mapping.common;
 
 import com.google.common.collect.BiMap;
@@ -8,48 +11,51 @@ import org.spongepowered.asm.obfuscation.mapping.common.MappingField;
 import org.spongepowered.asm.obfuscation.mapping.common.MappingMethod;
 import org.spongepowered.tools.obfuscation.mapping.IMappingProvider;
 
-public abstract class MappingProvider implements IMappingProvider {
-  protected final Messager messager;
-  
-  protected final Filer filer;
-  
-  protected final BiMap<String, String> packageMap = (BiMap<String, String>)HashBiMap.create();
-  
-  protected final BiMap<String, String> classMap = (BiMap<String, String>)HashBiMap.create();
-  
-  protected final BiMap<MappingField, MappingField> fieldMap = (BiMap<MappingField, MappingField>)HashBiMap.create();
-  
-  protected final BiMap<MappingMethod, MappingMethod> methodMap = (BiMap<MappingMethod, MappingMethod>)HashBiMap.create();
-  
-  public MappingProvider(Messager messager, Filer filer) {
-    this.messager = messager;
-    this.filer = filer;
-  }
-  
-  public void clear() {
-    this.packageMap.clear();
-    this.classMap.clear();
-    this.fieldMap.clear();
-    this.methodMap.clear();
-  }
-  
-  public boolean isEmpty() {
-    return (this.packageMap.isEmpty() && this.classMap.isEmpty() && this.fieldMap.isEmpty() && this.methodMap.isEmpty());
-  }
-  
-  public MappingMethod getMethodMapping(MappingMethod method) {
-    return (MappingMethod)this.methodMap.get(method);
-  }
-  
-  public MappingField getFieldMapping(MappingField field) {
-    return (MappingField)this.fieldMap.get(field);
-  }
-  
-  public String getClassMapping(String className) {
-    return (String)this.classMap.get(className);
-  }
-  
-  public String getPackageMapping(String packageName) {
-    return (String)this.packageMap.get(packageName);
-  }
+public abstract class MappingProvider
+implements IMappingProvider {
+    protected final Messager messager;
+    protected final Filer filer;
+    protected final BiMap<String, String> packageMap = HashBiMap.create();
+    protected final BiMap<String, String> classMap = HashBiMap.create();
+    protected final BiMap<MappingField, MappingField> fieldMap = HashBiMap.create();
+    protected final BiMap<MappingMethod, MappingMethod> methodMap = HashBiMap.create();
+
+    public MappingProvider(Messager messager, Filer filer) {
+        this.messager = messager;
+        this.filer = filer;
+    }
+
+    @Override
+    public void clear() {
+        this.packageMap.clear();
+        this.classMap.clear();
+        this.fieldMap.clear();
+        this.methodMap.clear();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this.packageMap.isEmpty() && this.classMap.isEmpty() && this.fieldMap.isEmpty() && this.methodMap.isEmpty();
+    }
+
+    @Override
+    public MappingMethod getMethodMapping(MappingMethod method) {
+        return (MappingMethod)this.methodMap.get((Object)method);
+    }
+
+    @Override
+    public MappingField getFieldMapping(MappingField field) {
+        return (MappingField)this.fieldMap.get((Object)field);
+    }
+
+    @Override
+    public String getClassMapping(String className) {
+        return (String)this.classMap.get((Object)className);
+    }
+
+    @Override
+    public String getPackageMapping(String packageName) {
+        return (String)this.packageMap.get((Object)packageName);
+    }
 }
+

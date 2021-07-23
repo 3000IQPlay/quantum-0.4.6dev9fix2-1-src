@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.mixin.injection;
 
 import java.lang.annotation.ElementType;
@@ -5,12 +8,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.METHOD})
-@Retention(RetentionPolicy.CLASS)
+@Target(value={ElementType.METHOD})
+@Retention(value=RetentionPolicy.CLASS)
 public @interface Group {
-  String name() default "";
-  
-  int min() default -1;
-  
-  int max() default -1;
+    public String name() default "";
+
+    public int min() default -1;
+
+    public int max() default -1;
 }
+

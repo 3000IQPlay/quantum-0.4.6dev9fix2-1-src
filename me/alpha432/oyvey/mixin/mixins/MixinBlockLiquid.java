@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.mixin.mixins;
 
 import me.alpha432.oyvey.features.modules.player.LiquidInteract;
@@ -11,14 +14,16 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin({BlockLiquid.class})
-public class MixinBlockLiquid extends Block {
-  protected MixinBlockLiquid(Material materialIn) {
-    super(materialIn);
-  }
-  
-  @Inject(method = {"canCollideCheck"}, at = {@At("HEAD")}, cancellable = true)
-  public void canCollideCheckHook(IBlockState blockState, boolean hitIfLiquid, CallbackInfoReturnable<Boolean> info) {
-    info.setReturnValue(Boolean.valueOf(((hitIfLiquid && ((Integer)blockState.getValue((IProperty)BlockLiquid.LEVEL)).intValue() == 0) || LiquidInteract.getInstance().isOn())));
-  }
+@Mixin(value={BlockLiquid.class})
+public class MixinBlockLiquid
+extends Block {
+    protected MixinBlockLiquid(Material materialIn) {
+        super(materialIn);
+    }
+
+    @Inject(method={"canCollideCheck"}, at={@At(value="HEAD")}, cancellable=true)
+    public void canCollideCheckHook(IBlockState blockState, boolean hitIfLiquid, CallbackInfoReturnable<Boolean> info) {
+        info.setReturnValue(hitIfLiquid && (Integer)blockState.getValue((IProperty)BlockLiquid.LEVEL) == 0 || LiquidInteract.getInstance().isOn());
+    }
 }
+

@@ -1,29 +1,37 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.obfuscation.mapping;
 
 public interface IMapping<TMapping> {
-  Type getType();
-  
-  TMapping move(String paramString);
-  
-  TMapping remap(String paramString);
-  
-  TMapping transform(String paramString);
-  
-  TMapping copy();
-  
-  String getName();
-  
-  String getSimpleName();
-  
-  String getOwner();
-  
-  String getDesc();
-  
-  TMapping getSuper();
-  
-  String serialise();
-  
-  public enum Type {
-    FIELD, METHOD, CLASS, PACKAGE;
-  }
+    public Type getType();
+
+    public TMapping move(String var1);
+
+    public TMapping remap(String var1);
+
+    public TMapping transform(String var1);
+
+    public TMapping copy();
+
+    public String getName();
+
+    public String getSimpleName();
+
+    public String getOwner();
+
+    public String getDesc();
+
+    public TMapping getSuper();
+
+    public String serialise();
+
+    public static enum Type {
+        FIELD,
+        METHOD,
+        CLASS,
+        PACKAGE;
+
+    }
 }
+

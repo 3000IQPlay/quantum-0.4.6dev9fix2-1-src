@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.mixin.mixins;
 
 import com.google.common.base.Predicate;
@@ -20,32 +23,36 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin({World.class})
+@Mixin(value={World.class})
 public class MixinWorld {
-  @Redirect(method = {"getEntitiesWithinAABB(Ljava/lang/Class;Lnet/minecraft/util/math/AxisAlignedBB;Lcom/google/common/base/Predicate;)Ljava/util/List;"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/Chunk;getEntitiesOfTypeWithinAABB(Ljava/lang/Class;Lnet/minecraft/util/math/AxisAlignedBB;Ljava/util/List;Lcom/google/common/base/Predicate;)V"))
-  public <T extends Entity> void getEntitiesOfTypeWithinAABBHook(Chunk chunk, Class<? extends T> entityClass, AxisAlignedBB aabb, List<T> listToFill, Predicate<? super T> filter) {
-    try {
-      chunk.getEntitiesOfTypeWithinAABB(entityClass, aabb, listToFill, filter);
-    } catch (Exception exception) {}
-  }
-  
-  @Inject(method = {"onEntityAdded"}, at = {@At("HEAD")})
-  private void onEntityAdded(Entity entityIn, CallbackInfo ci) {
-    Tracker.getInstance().onSpawnEntity(entityIn);
-  }
-  
-  @Inject(method = {"checkLightFor"}, at = {@At("HEAD")}, cancellable = true)
-  private void updateLightmapHook(EnumSkyBlock lightType, BlockPos pos, CallbackInfoReturnable<Boolean> info) {
-    if (lightType == EnumSkyBlock.SKY && NoRender.getInstance().isOn() && ((NoRender.getInstance()).skylight.getValue() == NoRender.Skylight.WORLD || (NoRender.getInstance()).skylight.getValue() == NoRender.Skylight.ALL)) {
-      info.setReturnValue(Boolean.valueOf(true));
-      info.cancel();
-    } 
-  }
-  
-  @Redirect(method = {"handleMaterialAcceleration"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;isPushedByWater()Z"))
-  public boolean isPushedbyWaterHook(Entity entity) {
-    PushEvent event = new PushEvent(2, entity);
-    MinecraftForge.EVENT_BUS.post((Event)event);
-    return (entity.isPushedByWater() && !event.isCanceled());
-  }
+    @Redirect(method={"getEntitiesWithinAABB(Ljava/lang/Class;Lnet/minecraft/util/math/AxisAlignedBB;Lcom/google/common/base/Predicate;)Ljava/util/List;"}, at=@At(value="INVOKE", target="Lnet/minecraft/world/chunk/Chunk;getEntitiesOfTypeWithinAABB(Ljava/lang/Class;Lnet/minecraft/util/math/AxisAlignedBB;Ljava/util/List;Lcom/google/common/base/Predicate;)V"))
+    public <T extends Entity> void getEntitiesOfTypeWithinAABBHook(Chunk chunk, Class<? extends T> entityClass, AxisAlignedBB aabb, List<T> listToFill, Predicate<? super T> filter) {
+        try {
+            chunk.getEntitiesOfTypeWithinAABB(entityClass, aabb, listToFill, filter);
+        }
+        catch (Exception exception) {
+            // empty catch block
+        }
+    }
+
+    @Inject(method={"onEntityAdded"}, at={@At(value="HEAD")})
+    private void onEntityAdded(Entity entityIn, CallbackInfo ci) {
+        Tracker.getInstance().onSpawnEntity(entityIn);
+    }
+
+    @Inject(method={"checkLightFor"}, at={@At(value="HEAD")}, cancellable=true)
+    private void updateLightmapHook(EnumSkyBlock lightType, BlockPos pos, CallbackInfoReturnable<Boolean> info) {
+        if (lightType == EnumSkyBlock.SKY && NoRender.getInstance().isOn() && (NoRender.getInstance().skylight.getValue() == NoRender.Skylight.WORLD || NoRender.getInstance().skylight.getValue() == NoRender.Skylight.ALL)) {
+            info.setReturnValue(true);
+            info.cancel();
+        }
+    }
+
+    @Redirect(method={"handleMaterialAcceleration"}, at=@At(value="INVOKE", target="Lnet/minecraft/entity/Entity;isPushedByWater()Z"))
+    public boolean isPushedbyWaterHook(Entity entity) {
+        PushEvent event = new PushEvent(2, entity);
+        MinecraftForge.EVENT_BUS.post((Event)event);
+        return entity.isPushedByWater() && !event.isCanceled();
+    }
 }
+

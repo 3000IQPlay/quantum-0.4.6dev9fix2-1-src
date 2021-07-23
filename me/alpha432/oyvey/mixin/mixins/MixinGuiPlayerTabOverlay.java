@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.mixin.mixins;
 
 import java.util.List;
@@ -11,16 +14,19 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin({GuiPlayerTabOverlay.class})
-public class MixinGuiPlayerTabOverlay extends Gui {
-  @Redirect(method = {"renderPlayerlist"}, at = @At(value = "INVOKE", target = "Ljava/util/List;subList(II)Ljava/util/List;"))
-  public List<NetworkPlayerInfo> subListHook(List<NetworkPlayerInfo> list, int fromIndex, int toIndex) {
-    return list.subList(fromIndex, ExtraTab.getINSTANCE().isEnabled() ? Math.min(((Integer)(ExtraTab.getINSTANCE()).size.getValue()).intValue(), list.size()) : toIndex);
-  }
-  
-  @Inject(method = {"getPlayerName"}, at = {@At("HEAD")}, cancellable = true)
-  public void getPlayerNameHook(NetworkPlayerInfo networkPlayerInfoIn, CallbackInfoReturnable<String> info) {
-    if (ExtraTab.getINSTANCE().isEnabled())
-      info.setReturnValue(ExtraTab.getPlayerName(networkPlayerInfoIn)); 
-  }
+@Mixin(value={GuiPlayerTabOverlay.class})
+public class MixinGuiPlayerTabOverlay
+extends Gui {
+    @Redirect(method={"renderPlayerlist"}, at=@At(value="INVOKE", target="Ljava/util/List;subList(II)Ljava/util/List;"))
+    public List<NetworkPlayerInfo> subListHook(List<NetworkPlayerInfo> list, int fromIndex, int toIndex) {
+        return list.subList(fromIndex, ExtraTab.getINSTANCE().isEnabled() ? Math.min(ExtraTab.getINSTANCE().size.getValue(), list.size()) : toIndex);
+    }
+
+    @Inject(method={"getPlayerName"}, at={@At(value="HEAD")}, cancellable=true)
+    public void getPlayerNameHook(NetworkPlayerInfo networkPlayerInfoIn, CallbackInfoReturnable<String> info) {
+        if (ExtraTab.getINSTANCE().isEnabled()) {
+            info.setReturnValue(ExtraTab.getPlayerName(networkPlayerInfoIn));
+        }
+    }
 }
+

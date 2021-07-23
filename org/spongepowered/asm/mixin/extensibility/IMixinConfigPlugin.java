@@ -1,21 +1,26 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.mixin.extensibility;
 
 import java.util.List;
 import java.util.Set;
 import org.spongepowered.asm.lib.tree.ClassNode;
+import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
 public interface IMixinConfigPlugin {
-  void onLoad(String paramString);
-  
-  String getRefMapperConfig();
-  
-  boolean shouldApplyMixin(String paramString1, String paramString2);
-  
-  void acceptTargets(Set<String> paramSet1, Set<String> paramSet2);
-  
-  List<String> getMixins();
-  
-  void preApply(String paramString1, ClassNode paramClassNode, String paramString2, IMixinInfo paramIMixinInfo);
-  
-  void postApply(String paramString1, ClassNode paramClassNode, String paramString2, IMixinInfo paramIMixinInfo);
+    public void onLoad(String var1);
+
+    public String getRefMapperConfig();
+
+    public boolean shouldApplyMixin(String var1, String var2);
+
+    public void acceptTargets(Set<String> var1, Set<String> var2);
+
+    public List<String> getMixins();
+
+    public void preApply(String var1, ClassNode var2, String var3, IMixinInfo var4);
+
+    public void postApply(String var1, ClassNode var2, String var3, IMixinInfo var4);
 }
+

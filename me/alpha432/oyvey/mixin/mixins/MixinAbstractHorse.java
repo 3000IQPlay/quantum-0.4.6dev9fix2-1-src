@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.mixin.mixins;
 
 import me.alpha432.oyvey.features.modules.movement.EntityControl;
@@ -7,11 +10,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin({AbstractHorse.class})
+@Mixin(value={AbstractHorse.class})
 public class MixinAbstractHorse {
-  @Inject(method = {"isHorseSaddled"}, at = {@At("HEAD")}, cancellable = true)
-  public void isHorseSaddled(CallbackInfoReturnable<Boolean> cir) {
-    if (EntityControl.INSTANCE.isEnabled())
-      cir.setReturnValue(Boolean.valueOf(true)); 
-  }
+    @Inject(method={"isHorseSaddled"}, at={@At(value="HEAD")}, cancellable=true)
+    public void isHorseSaddled(CallbackInfoReturnable<Boolean> cir) {
+        if (EntityControl.INSTANCE.isEnabled()) {
+            cir.setReturnValue(true);
+        }
+    }
 }
+

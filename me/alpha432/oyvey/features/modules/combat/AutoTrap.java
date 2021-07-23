@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.features.modules.combat;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
@@ -22,177 +25,171 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
-public class AutoTrap extends Module {
-  public static boolean isPlacing = false;
-  
-  private final Setting<Integer> delay = register(new Setting("Delay", Integer.valueOf(50), Integer.valueOf(0), Integer.valueOf(250)));
-  
-  private final Setting<Integer> blocksPerPlace = register(new Setting("BlocksPerTick", Integer.valueOf(8), Integer.valueOf(1), Integer.valueOf(30)));
-  
-  private final Setting<Boolean> rotate = register(new Setting("Rotate", Boolean.valueOf(true)));
-  
-  private final Setting<Boolean> raytrace = register(new Setting("Raytrace", Boolean.valueOf(false)));
-  
-  private final Setting<Boolean> antiScaffold = register(new Setting("AntiScaffold", Boolean.valueOf(false)));
-  
-  private final Setting<Boolean> antiStep = register(new Setting("AntiStep", Boolean.valueOf(false)));
-  
-  private final Setting<Boolean> noGhost = register(new Setting("PacketPlace", Boolean.valueOf(true)));
-  
-  private final Timer timer = new Timer();
-  
-  private final Map<BlockPos, Integer> retries = new HashMap<>();
-  
-  private final Timer retryTimer = new Timer();
-  
-  public EntityPlayer target;
-  
-  private boolean didPlace = false;
-  
-  private boolean switchedItem;
-  
-  private boolean isSneaking;
-  
-  private int lastHotbarSlot;
-  
-  private int placements = 0;
-  
-  private BlockPos startPos = null;
-  
-  private boolean offHand = false;
-  
-  public AutoTrap() {
-    super("AutoTrap", "Traps other players", Module.Category.COMBAT, true, false, false);
-  }
-  
-  public void onEnable() {
-    if (fullNullCheck())
-      return; 
-    this.startPos = EntityUtil.getRoundedBlockPos((Entity)mc.player);
-    this.lastHotbarSlot = mc.player.inventory.currentItem;
-    this.retries.clear();
-  }
-  
-  public void onTick() {
-    if (fullNullCheck())
-      return; 
-    doTrap();
-  }
-  
-  public String getDisplayInfo() {
-    if (this.target != null)
-      return this.target.getName(); 
-    return null;
-  }
-  
-  public void onDisable() {
-    isPlacing = false;
-    this.isSneaking = EntityUtil.stopSneaking(this.isSneaking);
-  }
-  
-  private void doTrap() {
-    if (check())
-      return; 
-    doStaticTrap();
-    if (this.didPlace)
-      this.timer.reset(); 
-  }
-  
-  private void doStaticTrap() {
-    List<Vec3d> placeTargets = EntityUtil.targets2(this.target.getPositionVector(), ((Boolean)this.antiScaffold.getValue()).booleanValue(), ((Boolean)this.antiStep.getValue()).booleanValue(), false, false, false, ((Boolean)this.raytrace.getValue()).booleanValue());
-    placeList(placeTargets);
-  }
-  
-  private void placeList(List<Vec3d> list) {
-    list.sort((vec3d, vec3d2) -> Double.compare(mc.player.getDistanceSq(vec3d2.x, vec3d2.y, vec3d2.z), mc.player.getDistanceSq(vec3d.x, vec3d.y, vec3d.z)));
-    list.sort(Comparator.comparingDouble(vec3d -> vec3d.y));
-    for (Vec3d vec3d3 : list) {
-      BlockPos position = new BlockPos(vec3d3);
-      int placeability = BlockUtil.isPositionPlaceable(position, ((Boolean)this.raytrace.getValue()).booleanValue());
-      if (placeability == 1 && (this.retries.get(position) == null || ((Integer)this.retries.get(position)).intValue() < 4)) {
-        placeBlock(position);
-        this.retries.put(position, Integer.valueOf((this.retries.get(position) == null) ? 1 : (((Integer)this.retries.get(position)).intValue() + 1)));
-        this.retryTimer.reset();
-        continue;
-      } 
-      if (placeability != 3)
-        continue; 
-      placeBlock(position);
-    } 
-  }
-  
-  private boolean check() {
-    isPlacing = false;
-    this.didPlace = false;
-    this.placements = 0;
-    int obbySlot2 = InventoryUtil.findHotbarBlock(BlockObsidian.class);
-    if (obbySlot2 == -1)
-      toggle(); 
-    int obbySlot = InventoryUtil.findHotbarBlock(BlockObsidian.class);
-    if (isOff())
-      return true; 
-    if (!this.startPos.equals(EntityUtil.getRoundedBlockPos((Entity)mc.player))) {
-      disable();
-      return true;
-    } 
-    if (this.retryTimer.passedMs(2000L)) {
-      this.retries.clear();
-      this.retryTimer.reset();
-    } 
-    if (obbySlot == -1) {
-      Command.sendMessage("<" + getDisplayName() + "> " + ChatFormatting.RED + "No Obsidian in hotbar disabling...");
-      disable();
-      return true;
-    } 
-    if (mc.player.inventory.currentItem != this.lastHotbarSlot && mc.player.inventory.currentItem != obbySlot)
-      this.lastHotbarSlot = mc.player.inventory.currentItem; 
-    this.isSneaking = EntityUtil.stopSneaking(this.isSneaking);
-    this.target = getTarget(10.0D, true);
-    return (this.target == null || !this.timer.passedMs(((Integer)this.delay.getValue()).intValue()));
-  }
-  
-  private EntityPlayer getTarget(double range, boolean trapped) {
-    EntityPlayer target = null;
-    double distance = Math.pow(range, 2.0D) + 1.0D;
-    for (EntityPlayer player : mc.world.playerEntities) {
-      if (EntityUtil.isntValid((Entity)player, range) || (trapped && EntityUtil.isTrapped2(player, ((Boolean)this.antiScaffold.getValue()).booleanValue(), ((Boolean)this.antiStep.getValue()).booleanValue(), false, false, false)) || OyVey.speedManager.getPlayerSpeed(player) > 10.0D)
-        continue; 
-      if (target == null) {
-        target = player;
-        distance = mc.player.getDistanceSq((Entity)player);
-        continue;
-      } 
-      if (mc.player.getDistanceSq((Entity)player) >= distance)
-        continue; 
-      target = player;
-      distance = mc.player.getDistanceSq((Entity)player);
-    } 
-    return target;
-  }
-  
-  private void placeBlock(BlockPos pos) {
-    if (this.placements < ((Integer)this.blocksPerPlace.getValue()).intValue() && mc.player.getDistanceSq(pos) <= MathUtil.square(5.0D)) {
-      isPlacing = true;
-      int originalSlot = mc.player.inventory.currentItem;
-      int obbySlot = InventoryUtil.findHotbarBlock(BlockObsidian.class);
-      int eChestSot = InventoryUtil.findHotbarBlock(BlockEnderChest.class);
-      if (obbySlot == -1 && eChestSot == -1)
-        toggle(); 
-      if (((Boolean)this.rotate.getValue()).booleanValue()) {
-        mc.player.inventory.currentItem = (obbySlot == -1) ? eChestSot : obbySlot;
-        mc.playerController.updateController();
-        this.isSneaking = BlockUtil.placeBlock(pos, this.offHand ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND, ((Boolean)this.rotate.getValue()).booleanValue(), ((Boolean)this.noGhost.getValue()).booleanValue(), this.isSneaking);
-        mc.player.inventory.currentItem = originalSlot;
-        mc.playerController.updateController();
-      } else {
-        mc.player.inventory.currentItem = (obbySlot == -1) ? eChestSot : obbySlot;
-        mc.playerController.updateController();
-        this.isSneaking = BlockUtil.placeBlock(pos, this.offHand ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND, ((Boolean)this.rotate.getValue()).booleanValue(), ((Boolean)this.noGhost.getValue()).booleanValue(), this.isSneaking);
-        mc.player.inventory.currentItem = originalSlot;
-        mc.playerController.updateController();
-      } 
-      this.didPlace = true;
-      this.placements++;
-    } 
-  }
+public class AutoTrap
+extends Module {
+    public static boolean isPlacing = false;
+    private final Setting<Integer> delay = this.register(new Setting<Integer>("Delay", 50, 0, 250));
+    private final Setting<Integer> blocksPerPlace = this.register(new Setting<Integer>("BlocksPerTick", 8, 1, 30));
+    private final Setting<Boolean> rotate = this.register(new Setting<Boolean>("Rotate", true));
+    private final Setting<Boolean> raytrace = this.register(new Setting<Boolean>("Raytrace", false));
+    private final Setting<Boolean> antiScaffold = this.register(new Setting<Boolean>("AntiScaffold", false));
+    private final Setting<Boolean> antiStep = this.register(new Setting<Boolean>("AntiStep", false));
+    private final Setting<Boolean> noGhost = this.register(new Setting<Boolean>("PacketPlace", true));
+    private final Timer timer = new Timer();
+    private final Map<BlockPos, Integer> retries = new HashMap<BlockPos, Integer>();
+    private final Timer retryTimer = new Timer();
+    public EntityPlayer target;
+    private boolean didPlace = false;
+    private boolean switchedItem;
+    private boolean isSneaking;
+    private int lastHotbarSlot;
+    private int placements = 0;
+    private BlockPos startPos = null;
+    private boolean offHand = false;
+
+    public AutoTrap() {
+        super("AutoTrap", "Traps other players", Module.Category.COMBAT, true, false, false);
+    }
+
+    @Override
+    public void onEnable() {
+        if (AutoTrap.fullNullCheck()) {
+            return;
+        }
+        this.startPos = EntityUtil.getRoundedBlockPos((Entity)AutoTrap.mc.player);
+        this.lastHotbarSlot = AutoTrap.mc.player.inventory.currentItem;
+        this.retries.clear();
+    }
+
+    @Override
+    public void onTick() {
+        if (AutoTrap.fullNullCheck()) {
+            return;
+        }
+        this.doTrap();
+    }
+
+    @Override
+    public String getDisplayInfo() {
+        if (this.target != null) {
+            return this.target.getName();
+        }
+        return null;
+    }
+
+    @Override
+    public void onDisable() {
+        isPlacing = false;
+        this.isSneaking = EntityUtil.stopSneaking(this.isSneaking);
+    }
+
+    private void doTrap() {
+        if (this.check()) {
+            return;
+        }
+        this.doStaticTrap();
+        if (this.didPlace) {
+            this.timer.reset();
+        }
+    }
+
+    private void doStaticTrap() {
+        List<Vec3d> placeTargets = EntityUtil.targets2(this.target.getPositionVector(), this.antiScaffold.getValue(), this.antiStep.getValue(), false, false, false, this.raytrace.getValue());
+        this.placeList(placeTargets);
+    }
+
+    private void placeList(List<Vec3d> list) {
+        list.sort((vec3d, vec3d2) -> Double.compare(AutoTrap.mc.player.getDistanceSq(vec3d2.x, vec3d2.y, vec3d2.z), AutoTrap.mc.player.getDistanceSq(vec3d.x, vec3d.y, vec3d.z)));
+        list.sort(Comparator.comparingDouble(vec3d -> vec3d.y));
+        for (Vec3d vec3d3 : list) {
+            BlockPos position = new BlockPos(vec3d3);
+            int placeability = BlockUtil.isPositionPlaceable(position, this.raytrace.getValue());
+            if (placeability == 1 && (this.retries.get(position) == null || this.retries.get(position) < 4)) {
+                this.placeBlock(position);
+                this.retries.put(position, this.retries.get(position) == null ? 1 : this.retries.get(position) + 1);
+                this.retryTimer.reset();
+                continue;
+            }
+            if (placeability != 3) continue;
+            this.placeBlock(position);
+        }
+    }
+
+    private boolean check() {
+        isPlacing = false;
+        this.didPlace = false;
+        this.placements = 0;
+        int obbySlot2 = InventoryUtil.findHotbarBlock(BlockObsidian.class);
+        if (obbySlot2 == -1) {
+            this.toggle();
+        }
+        int obbySlot = InventoryUtil.findHotbarBlock(BlockObsidian.class);
+        if (this.isOff()) {
+            return true;
+        }
+        if (!this.startPos.equals((Object)EntityUtil.getRoundedBlockPos((Entity)AutoTrap.mc.player))) {
+            this.disable();
+            return true;
+        }
+        if (this.retryTimer.passedMs(2000L)) {
+            this.retries.clear();
+            this.retryTimer.reset();
+        }
+        if (obbySlot == -1) {
+            Command.sendMessage("<" + this.getDisplayName() + "> " + ChatFormatting.RED + "No Obsidian in hotbar disabling...");
+            this.disable();
+            return true;
+        }
+        if (AutoTrap.mc.player.inventory.currentItem != this.lastHotbarSlot && AutoTrap.mc.player.inventory.currentItem != obbySlot) {
+            this.lastHotbarSlot = AutoTrap.mc.player.inventory.currentItem;
+        }
+        this.isSneaking = EntityUtil.stopSneaking(this.isSneaking);
+        this.target = this.getTarget(10.0, true);
+        return this.target == null || !this.timer.passedMs(this.delay.getValue().intValue());
+    }
+
+    private EntityPlayer getTarget(double range, boolean trapped) {
+        EntityPlayer target = null;
+        double distance = Math.pow(range, 2.0) + 1.0;
+        for (EntityPlayer player : AutoTrap.mc.world.playerEntities) {
+            if (EntityUtil.isntValid((Entity)player, range) || trapped && EntityUtil.isTrapped2(player, this.antiScaffold.getValue(), this.antiStep.getValue(), false, false, false) || OyVey.speedManager.getPlayerSpeed(player) > 10.0) continue;
+            if (target == null) {
+                target = player;
+                distance = AutoTrap.mc.player.getDistanceSq((Entity)player);
+                continue;
+            }
+            if (!(AutoTrap.mc.player.getDistanceSq((Entity)player) < distance)) continue;
+            target = player;
+            distance = AutoTrap.mc.player.getDistanceSq((Entity)player);
+        }
+        return target;
+    }
+
+    private void placeBlock(BlockPos pos) {
+        if (this.placements < this.blocksPerPlace.getValue() && AutoTrap.mc.player.getDistanceSq(pos) <= MathUtil.square(5.0)) {
+            isPlacing = true;
+            int originalSlot = AutoTrap.mc.player.inventory.currentItem;
+            int obbySlot = InventoryUtil.findHotbarBlock(BlockObsidian.class);
+            int eChestSot = InventoryUtil.findHotbarBlock(BlockEnderChest.class);
+            if (obbySlot == -1 && eChestSot == -1) {
+                this.toggle();
+            }
+            if (this.rotate.getValue().booleanValue()) {
+                AutoTrap.mc.player.inventory.currentItem = obbySlot == -1 ? eChestSot : obbySlot;
+                AutoTrap.mc.playerController.updateController();
+                this.isSneaking = BlockUtil.placeBlock(pos, this.offHand ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND, this.rotate.getValue(), this.noGhost.getValue(), this.isSneaking);
+                AutoTrap.mc.player.inventory.currentItem = originalSlot;
+                AutoTrap.mc.playerController.updateController();
+            } else {
+                AutoTrap.mc.player.inventory.currentItem = obbySlot == -1 ? eChestSot : obbySlot;
+                AutoTrap.mc.playerController.updateController();
+                this.isSneaking = BlockUtil.placeBlock(pos, this.offHand ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND, this.rotate.getValue(), this.noGhost.getValue(), this.isSneaking);
+                AutoTrap.mc.player.inventory.currentItem = originalSlot;
+                AutoTrap.mc.playerController.updateController();
+            }
+            this.didPlace = true;
+            ++this.placements;
+        }
+    }
 }
+

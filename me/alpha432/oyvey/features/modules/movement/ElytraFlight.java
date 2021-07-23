@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.features.modules.movement;
 
 import me.alpha432.oyvey.OyVey;
@@ -20,449 +23,476 @@ import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-public class ElytraFlight extends Module {
-  private static ElytraFlight INSTANCE = new ElytraFlight();
-  
-  private final Timer timer = new Timer();
-  
-  private final Timer bypassTimer = new Timer();
-  
-  public Setting<Mode> mode = register(new Setting("Mode", Mode.FLY));
-  
-  public Setting<Integer> devMode = register(new Setting("Type", Integer.valueOf(2), Integer.valueOf(1), Integer.valueOf(3), v -> (this.mode.getValue() == Mode.BYPASS || this.mode.getValue() == Mode.BETTER), "EventMode"));
-  
-  public Setting<Float> speed = register(new Setting("Speed", Float.valueOf(1.0F), Float.valueOf(0.0F), Float.valueOf(10.0F), v -> (this.mode.getValue() != Mode.FLY && this.mode.getValue() != Mode.BOOST && this.mode.getValue() != Mode.BETTER && this.mode.getValue() != Mode.OHARE), "The Speed."));
-  
-  public Setting<Float> vSpeed = register(new Setting("VSpeed", Float.valueOf(0.3F), Float.valueOf(0.0F), Float.valueOf(10.0F), v -> (this.mode.getValue() == Mode.BETTER || this.mode.getValue() == Mode.OHARE), "Vertical Speed"));
-  
-  public Setting<Float> hSpeed = register(new Setting("HSpeed", Float.valueOf(1.0F), Float.valueOf(0.0F), Float.valueOf(10.0F), v -> (this.mode.getValue() == Mode.BETTER || this.mode.getValue() == Mode.OHARE), "Horizontal Speed"));
-  
-  public Setting<Float> glide = register(new Setting("Glide", Float.valueOf(1.0E-4F), Float.valueOf(0.0F), Float.valueOf(0.2F), v -> (this.mode.getValue() == Mode.BETTER), "Glide Speed"));
-  
-  public Setting<Float> tooBeeSpeed = register(new Setting("TooBeeSpeed", Float.valueOf(1.8000001F), Float.valueOf(1.0F), Float.valueOf(2.0F), v -> (this.mode.getValue() == Mode.TOOBEE), "Speed for flight on 2b2t"));
-  
-  public Setting<Boolean> autoStart = register(new Setting("AutoStart", Boolean.valueOf(true)));
-  
-  public Setting<Boolean> disableInLiquid = register(new Setting("NoLiquid", Boolean.valueOf(true)));
-  
-  public Setting<Boolean> infiniteDura = register(new Setting("InfiniteDura", Boolean.valueOf(false)));
-  
-  public Setting<Boolean> noKick = register(new Setting("NoKick", Boolean.valueOf(false), v -> (this.mode.getValue() == Mode.PACKET)));
-  
-  public Setting<Boolean> allowUp = register(new Setting("AllowUp", Boolean.valueOf(true), v -> (this.mode.getValue() == Mode.BETTER)));
-  
-  public Setting<Boolean> lockPitch = register(new Setting("LockPitch", Boolean.valueOf(false)));
-  
-  private boolean vertical;
-  
-  private Double posX;
-  
-  private Double flyHeight;
-  
-  private Double posZ;
-  
-  public ElytraFlight() {
-    super("ElytraFlight", "Makes Elytra Flight better.", Module.Category.MOVEMENT, true, false, false);
-    setInstance();
-  }
-  
-  public static ElytraFlight getInstance() {
-    if (INSTANCE == null)
-      INSTANCE = new ElytraFlight(); 
-    return INSTANCE;
-  }
-  
-  private void setInstance() {
-    INSTANCE = this;
-  }
-  
-  public void onEnable() {
-    if (this.mode.getValue() == Mode.BETTER && !((Boolean)this.autoStart.getValue()).booleanValue() && ((Integer)this.devMode.getValue()).intValue() == 1)
-      mc.player.connection.sendPacket((Packet)new CPacketEntityAction((Entity)mc.player, CPacketEntityAction.Action.START_FALL_FLYING)); 
-    this.flyHeight = null;
-    this.posX = null;
-    this.posZ = null;
-  }
-  
-  public String getDisplayInfo() {
-    return this.mode.currentEnumName();
-  }
-  
-  public void onUpdate() {
-    if (this.mode.getValue() == Mode.BYPASS && ((Integer)this.devMode.getValue()).intValue() == 1 && mc.player.isElytraFlying()) {
-      mc.player.motionX = 0.0D;
-      mc.player.motionY = -1.0E-4D;
-      mc.player.motionZ = 0.0D;
-      double forwardInput = mc.player.movementInput.moveForward;
-      double strafeInput = mc.player.movementInput.moveStrafe;
-      double[] result = forwardStrafeYaw(forwardInput, strafeInput, mc.player.rotationYaw);
-      double forward = result[0];
-      double strafe = result[1];
-      double yaw = result[2];
-      if (forwardInput != 0.0D || strafeInput != 0.0D) {
-        mc.player.motionX = forward * ((Float)this.speed.getValue()).floatValue() * Math.cos(Math.toRadians(yaw + 90.0D)) + strafe * ((Float)this.speed.getValue()).floatValue() * Math.sin(Math.toRadians(yaw + 90.0D));
-        mc.player.motionZ = forward * ((Float)this.speed.getValue()).floatValue() * Math.sin(Math.toRadians(yaw + 90.0D)) - strafe * ((Float)this.speed.getValue()).floatValue() * Math.cos(Math.toRadians(yaw + 90.0D));
-      } 
-      if (mc.gameSettings.keyBindSneak.isKeyDown())
-        mc.player.motionY = -1.0D; 
-    } 
-  }
-  
-  @SubscribeEvent
-  public void onSendPacket(PacketEvent.Send event) {
-    if (event.getPacket() instanceof CPacketPlayer && this.mode.getValue() == Mode.TOOBEE) {
-      CPacketPlayer packet = (CPacketPlayer)event.getPacket();
-      if (mc.player.isElytraFlying());
-    } 
-    if (event.getPacket() instanceof CPacketPlayer && this.mode.getValue() == Mode.TOOBEEBYPASS) {
-      CPacketPlayer packet = (CPacketPlayer)event.getPacket();
-      if (mc.player.isElytraFlying());
-    } 
-  }
-  
-  @SubscribeEvent
-  public void onMove(MoveEvent event) {
-    if (this.mode.getValue() == Mode.OHARE) {
-      ItemStack itemstack = mc.player.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
-      if (itemstack.getItem() == Items.ELYTRA && ItemElytra.isUsable(itemstack) && mc.player.isElytraFlying()) {
-        event.setY(mc.gameSettings.keyBindJump.isKeyDown() ? ((Float)this.vSpeed.getValue()).floatValue() : (mc.gameSettings.keyBindSneak.isKeyDown() ? -((Float)this.vSpeed.getValue()).floatValue() : 0.0D));
-        mc.player.addVelocity(0.0D, mc.gameSettings.keyBindJump.isKeyDown() ? ((Float)this.vSpeed.getValue()).floatValue() : (mc.gameSettings.keyBindSneak.isKeyDown() ? -((Float)this.vSpeed.getValue()).floatValue() : 0.0D), 0.0D);
-        mc.player.rotateElytraX = 0.0F;
-        mc.player.rotateElytraY = 0.0F;
-        mc.player.rotateElytraZ = 0.0F;
-        mc.player.moveVertical = mc.gameSettings.keyBindJump.isKeyDown() ? ((Float)this.vSpeed.getValue()).floatValue() : (mc.gameSettings.keyBindSneak.isKeyDown() ? -((Float)this.vSpeed.getValue()).floatValue() : 0.0F);
-        double forward = mc.player.movementInput.moveForward;
-        double strafe = mc.player.movementInput.moveStrafe;
-        float yaw = mc.player.rotationYaw;
-        if (forward == 0.0D && strafe == 0.0D) {
-          event.setX(0.0D);
-          event.setZ(0.0D);
+public class ElytraFlight
+extends Module {
+    private static ElytraFlight INSTANCE = new ElytraFlight();
+    private final Timer timer = new Timer();
+    private final Timer bypassTimer = new Timer();
+    public Setting<Mode> mode = this.register(new Setting<Mode>("Mode", Mode.FLY));
+    public Setting<Integer> devMode = this.register(new Setting<Object>("Type", 2, 1, 3, v -> this.mode.getValue() == Mode.BYPASS || this.mode.getValue() == Mode.BETTER, "EventMode"));
+    public Setting<Float> speed = this.register(new Setting<Object>("Speed", Float.valueOf(1.0f), Float.valueOf(0.0f), Float.valueOf(10.0f), v -> this.mode.getValue() != Mode.FLY && this.mode.getValue() != Mode.BOOST && this.mode.getValue() != Mode.BETTER && this.mode.getValue() != Mode.OHARE, "The Speed."));
+    public Setting<Float> vSpeed = this.register(new Setting<Object>("VSpeed", Float.valueOf(0.3f), Float.valueOf(0.0f), Float.valueOf(10.0f), v -> this.mode.getValue() == Mode.BETTER || this.mode.getValue() == Mode.OHARE, "Vertical Speed"));
+    public Setting<Float> hSpeed = this.register(new Setting<Object>("HSpeed", Float.valueOf(1.0f), Float.valueOf(0.0f), Float.valueOf(10.0f), v -> this.mode.getValue() == Mode.BETTER || this.mode.getValue() == Mode.OHARE, "Horizontal Speed"));
+    public Setting<Float> glide = this.register(new Setting<Object>("Glide", Float.valueOf(1.0E-4f), Float.valueOf(0.0f), Float.valueOf(0.2f), v -> this.mode.getValue() == Mode.BETTER, "Glide Speed"));
+    public Setting<Float> tooBeeSpeed = this.register(new Setting<Object>("TooBeeSpeed", Float.valueOf(1.8000001f), Float.valueOf(1.0f), Float.valueOf(2.0f), v -> this.mode.getValue() == Mode.TOOBEE, "Speed for flight on 2b2t"));
+    public Setting<Boolean> autoStart = this.register(new Setting<Boolean>("AutoStart", true));
+    public Setting<Boolean> disableInLiquid = this.register(new Setting<Boolean>("NoLiquid", true));
+    public Setting<Boolean> infiniteDura = this.register(new Setting<Boolean>("InfiniteDura", false));
+    public Setting<Boolean> noKick = this.register(new Setting<Object>("NoKick", Boolean.valueOf(false), v -> this.mode.getValue() == Mode.PACKET));
+    public Setting<Boolean> allowUp = this.register(new Setting<Object>("AllowUp", Boolean.valueOf(true), v -> this.mode.getValue() == Mode.BETTER));
+    public Setting<Boolean> lockPitch = this.register(new Setting<Boolean>("LockPitch", false));
+    private boolean vertical;
+    private Double posX;
+    private Double flyHeight;
+    private Double posZ;
+
+    public ElytraFlight() {
+        super("ElytraFlight", "Makes Elytra Flight better.", Module.Category.MOVEMENT, true, false, false);
+        this.setInstance();
+    }
+
+    public static ElytraFlight getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new ElytraFlight();
+        }
+        return INSTANCE;
+    }
+
+    private void setInstance() {
+        INSTANCE = this;
+    }
+
+    @Override
+    public void onEnable() {
+        if (this.mode.getValue() == Mode.BETTER && !this.autoStart.getValue().booleanValue() && this.devMode.getValue() == 1) {
+            ElytraFlight.mc.player.connection.sendPacket((Packet)new CPacketEntityAction((Entity)ElytraFlight.mc.player, CPacketEntityAction.Action.START_FALL_FLYING));
+        }
+        this.flyHeight = null;
+        this.posX = null;
+        this.posZ = null;
+    }
+
+    @Override
+    public String getDisplayInfo() {
+        return this.mode.currentEnumName();
+    }
+
+    @Override
+    public void onUpdate() {
+        if (this.mode.getValue() == Mode.BYPASS && this.devMode.getValue() == 1 && ElytraFlight.mc.player.isElytraFlying()) {
+            ElytraFlight.mc.player.motionX = 0.0;
+            ElytraFlight.mc.player.motionY = -1.0E-4;
+            ElytraFlight.mc.player.motionZ = 0.0;
+            double forwardInput = ElytraFlight.mc.player.movementInput.moveForward;
+            double strafeInput = ElytraFlight.mc.player.movementInput.moveStrafe;
+            double[] result = this.forwardStrafeYaw(forwardInput, strafeInput, ElytraFlight.mc.player.rotationYaw);
+            double forward = result[0];
+            double strafe = result[1];
+            double yaw = result[2];
+            if (forwardInput != 0.0 || strafeInput != 0.0) {
+                ElytraFlight.mc.player.motionX = forward * (double)this.speed.getValue().floatValue() * Math.cos(Math.toRadians(yaw + 90.0)) + strafe * (double)this.speed.getValue().floatValue() * Math.sin(Math.toRadians(yaw + 90.0));
+                ElytraFlight.mc.player.motionZ = forward * (double)this.speed.getValue().floatValue() * Math.sin(Math.toRadians(yaw + 90.0)) - strafe * (double)this.speed.getValue().floatValue() * Math.cos(Math.toRadians(yaw + 90.0));
+            }
+            if (ElytraFlight.mc.gameSettings.keyBindSneak.isKeyDown()) {
+                ElytraFlight.mc.player.motionY = -1.0;
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onSendPacket(PacketEvent.Send event) {
+        CPacketPlayer packet;
+        if (event.getPacket() instanceof CPacketPlayer && this.mode.getValue() == Mode.TOOBEE) {
+            packet = (CPacketPlayer)event.getPacket();
+            if (ElytraFlight.mc.player.isElytraFlying()) {
+                // empty if block
+            }
+        }
+        if (event.getPacket() instanceof CPacketPlayer && this.mode.getValue() == Mode.TOOBEEBYPASS) {
+            packet = (CPacketPlayer)event.getPacket();
+            if (ElytraFlight.mc.player.isElytraFlying()) {
+                // empty if block
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onMove(MoveEvent event) {
+        if (this.mode.getValue() == Mode.OHARE) {
+            ItemStack itemstack = ElytraFlight.mc.player.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+            if (itemstack.getItem() == Items.ELYTRA && ItemElytra.isUsable((ItemStack)itemstack) && ElytraFlight.mc.player.isElytraFlying()) {
+                event.setY(ElytraFlight.mc.gameSettings.keyBindJump.isKeyDown() ? (double)this.vSpeed.getValue().floatValue() : (ElytraFlight.mc.gameSettings.keyBindSneak.isKeyDown() ? (double)(-this.vSpeed.getValue().floatValue()) : 0.0));
+                ElytraFlight.mc.player.addVelocity(0.0, ElytraFlight.mc.gameSettings.keyBindJump.isKeyDown() ? (double)this.vSpeed.getValue().floatValue() : (ElytraFlight.mc.gameSettings.keyBindSneak.isKeyDown() ? (double)(-this.vSpeed.getValue().floatValue()) : 0.0), 0.0);
+                ElytraFlight.mc.player.rotateElytraX = 0.0f;
+                ElytraFlight.mc.player.rotateElytraY = 0.0f;
+                ElytraFlight.mc.player.rotateElytraZ = 0.0f;
+                ElytraFlight.mc.player.moveVertical = ElytraFlight.mc.gameSettings.keyBindJump.isKeyDown() ? this.vSpeed.getValue().floatValue() : (ElytraFlight.mc.gameSettings.keyBindSneak.isKeyDown() ? -this.vSpeed.getValue().floatValue() : 0.0f);
+                double forward = ElytraFlight.mc.player.movementInput.moveForward;
+                double strafe = ElytraFlight.mc.player.movementInput.moveStrafe;
+                float yaw = ElytraFlight.mc.player.rotationYaw;
+                if (forward == 0.0 && strafe == 0.0) {
+                    event.setX(0.0);
+                    event.setZ(0.0);
+                } else {
+                    if (forward != 0.0) {
+                        if (strafe > 0.0) {
+                            yaw += (float)(forward > 0.0 ? -45 : 45);
+                        } else if (strafe < 0.0) {
+                            yaw += (float)(forward > 0.0 ? 45 : -45);
+                        }
+                        strafe = 0.0;
+                        if (forward > 0.0) {
+                            forward = 1.0;
+                        } else if (forward < 0.0) {
+                            forward = -1.0;
+                        }
+                    }
+                    double cos = Math.cos(Math.toRadians(yaw + 90.0f));
+                    double sin = Math.sin(Math.toRadians(yaw + 90.0f));
+                    event.setX(forward * (double)this.hSpeed.getValue().floatValue() * cos + strafe * (double)this.hSpeed.getValue().floatValue() * sin);
+                    event.setZ(forward * (double)this.hSpeed.getValue().floatValue() * sin - strafe * (double)this.hSpeed.getValue().floatValue() * cos);
+                }
+            }
+        } else if (event.getStage() == 0 && this.mode.getValue() == Mode.BYPASS && this.devMode.getValue() == 3) {
+            if (ElytraFlight.mc.player.isElytraFlying()) {
+                event.setX(0.0);
+                event.setY(-1.0E-4);
+                event.setZ(0.0);
+                double forwardInput = ElytraFlight.mc.player.movementInput.moveForward;
+                double strafeInput = ElytraFlight.mc.player.movementInput.moveStrafe;
+                double[] result = this.forwardStrafeYaw(forwardInput, strafeInput, ElytraFlight.mc.player.rotationYaw);
+                double forward = result[0];
+                double strafe = result[1];
+                double yaw = result[2];
+                if (forwardInput != 0.0 || strafeInput != 0.0) {
+                    event.setX(forward * (double)this.speed.getValue().floatValue() * Math.cos(Math.toRadians(yaw + 90.0)) + strafe * (double)this.speed.getValue().floatValue() * Math.sin(Math.toRadians(yaw + 90.0)));
+                    event.setY(forward * (double)this.speed.getValue().floatValue() * Math.sin(Math.toRadians(yaw + 90.0)) - strafe * (double)this.speed.getValue().floatValue() * Math.cos(Math.toRadians(yaw + 90.0)));
+                }
+                if (ElytraFlight.mc.gameSettings.keyBindSneak.isKeyDown()) {
+                    event.setY(-1.0);
+                }
+            }
+        } else if (this.mode.getValue() == Mode.TOOBEE) {
+            if (!ElytraFlight.mc.player.isElytraFlying()) {
+                return;
+            }
+            if (!ElytraFlight.mc.player.movementInput.jump) {
+                if (ElytraFlight.mc.player.movementInput.sneak) {
+                    ElytraFlight.mc.player.motionY = -(this.tooBeeSpeed.getValue().floatValue() / 2.0f);
+                    event.setY(-(this.speed.getValue().floatValue() / 2.0f));
+                } else if (event.getY() != -1.01E-4) {
+                    event.setY(-1.01E-4);
+                    ElytraFlight.mc.player.motionY = -1.01E-4;
+                }
+            } else {
+                return;
+            }
+            this.setMoveSpeed(event, this.tooBeeSpeed.getValue().floatValue());
+        } else if (this.mode.getValue() == Mode.TOOBEEBYPASS) {
+            if (!ElytraFlight.mc.player.isElytraFlying()) {
+                return;
+            }
+            if (!ElytraFlight.mc.player.movementInput.jump) {
+                if (this.lockPitch.getValue().booleanValue()) {
+                    ElytraFlight.mc.player.rotationPitch = 4.0f;
+                }
+            } else {
+                return;
+            }
+            if (OyVey.speedManager.getSpeedKpH() > 180.0) {
+                return;
+            }
+            double yaw = Math.toRadians(ElytraFlight.mc.player.rotationYaw);
+            ElytraFlight.mc.player.motionX -= (double)ElytraFlight.mc.player.movementInput.moveForward * Math.sin(yaw) * 0.04;
+            ElytraFlight.mc.player.motionZ += (double)ElytraFlight.mc.player.movementInput.moveForward * Math.cos(yaw) * 0.04;
+        }
+    }
+
+    private void setMoveSpeed(MoveEvent event, double speed) {
+        double forward = ElytraFlight.mc.player.movementInput.moveForward;
+        double strafe = ElytraFlight.mc.player.movementInput.moveStrafe;
+        float yaw = ElytraFlight.mc.player.rotationYaw;
+        if (forward == 0.0 && strafe == 0.0) {
+            event.setX(0.0);
+            event.setZ(0.0);
+            ElytraFlight.mc.player.motionX = 0.0;
+            ElytraFlight.mc.player.motionZ = 0.0;
         } else {
-          if (forward != 0.0D) {
-            if (strafe > 0.0D) {
-              yaw += ((forward > 0.0D) ? -45 : 45);
-            } else if (strafe < 0.0D) {
-              yaw += ((forward > 0.0D) ? 45 : -45);
-            } 
-            strafe = 0.0D;
-            if (forward > 0.0D) {
-              forward = 1.0D;
-            } else if (forward < 0.0D) {
-              forward = -1.0D;
-            } 
-          } 
-          double cos = Math.cos(Math.toRadians((yaw + 90.0F)));
-          double sin = Math.sin(Math.toRadians((yaw + 90.0F)));
-          event.setX(forward * ((Float)this.hSpeed.getValue()).floatValue() * cos + strafe * ((Float)this.hSpeed.getValue()).floatValue() * sin);
-          event.setZ(forward * ((Float)this.hSpeed.getValue()).floatValue() * sin - strafe * ((Float)this.hSpeed.getValue()).floatValue() * cos);
-        } 
-      } 
-    } else if (event.getStage() == 0 && this.mode.getValue() == Mode.BYPASS && ((Integer)this.devMode.getValue()).intValue() == 3) {
-      if (mc.player.isElytraFlying()) {
-        event.setX(0.0D);
-        event.setY(-1.0E-4D);
-        event.setZ(0.0D);
-        double forwardInput = mc.player.movementInput.moveForward;
-        double strafeInput = mc.player.movementInput.moveStrafe;
-        double[] result = forwardStrafeYaw(forwardInput, strafeInput, mc.player.rotationYaw);
-        double forward = result[0];
-        double strafe = result[1];
-        double yaw = result[2];
-        if (forwardInput != 0.0D || strafeInput != 0.0D) {
-          event.setX(forward * ((Float)this.speed.getValue()).floatValue() * Math.cos(Math.toRadians(yaw + 90.0D)) + strafe * ((Float)this.speed.getValue()).floatValue() * Math.sin(Math.toRadians(yaw + 90.0D)));
-          event.setY(forward * ((Float)this.speed.getValue()).floatValue() * Math.sin(Math.toRadians(yaw + 90.0D)) - strafe * ((Float)this.speed.getValue()).floatValue() * Math.cos(Math.toRadians(yaw + 90.0D)));
-        } 
-        if (mc.gameSettings.keyBindSneak.isKeyDown())
-          event.setY(-1.0D); 
-      } 
-    } else if (this.mode.getValue() == Mode.TOOBEE) {
-      if (!mc.player.isElytraFlying())
-        return; 
-      if (!mc.player.movementInput.jump) {
-        if (mc.player.movementInput.sneak) {
-          mc.player.motionY = -(((Float)this.tooBeeSpeed.getValue()).floatValue() / 2.0F);
-          event.setY(-(((Float)this.speed.getValue()).floatValue() / 2.0F));
-        } else if (event.getY() != -1.01E-4D) {
-          event.setY(-1.01E-4D);
-          mc.player.motionY = -1.01E-4D;
-        } 
-      } else {
-        return;
-      } 
-      setMoveSpeed(event, ((Float)this.tooBeeSpeed.getValue()).floatValue());
-    } else if (this.mode.getValue() == Mode.TOOBEEBYPASS) {
-      if (!mc.player.isElytraFlying())
-        return; 
-      if (!mc.player.movementInput.jump) {
-        if (((Boolean)this.lockPitch.getValue()).booleanValue())
-          mc.player.rotationPitch = 4.0F; 
-      } else {
-        return;
-      } 
-      if (OyVey.speedManager.getSpeedKpH() > 180.0D)
-        return; 
-      double yaw = Math.toRadians(mc.player.rotationYaw);
-      mc.player.motionX -= mc.player.movementInput.moveForward * Math.sin(yaw) * 0.04D;
-      mc.player.motionZ += mc.player.movementInput.moveForward * Math.cos(yaw) * 0.04D;
-    } 
-  }
-  
-  private void setMoveSpeed(MoveEvent event, double speed) {
-    double forward = mc.player.movementInput.moveForward;
-    double strafe = mc.player.movementInput.moveStrafe;
-    float yaw = mc.player.rotationYaw;
-    if (forward == 0.0D && strafe == 0.0D) {
-      event.setX(0.0D);
-      event.setZ(0.0D);
-      mc.player.motionX = 0.0D;
-      mc.player.motionZ = 0.0D;
-    } else {
-      if (forward != 0.0D) {
-        if (strafe > 0.0D) {
-          yaw += ((forward > 0.0D) ? -45 : 45);
-        } else if (strafe < 0.0D) {
-          yaw += ((forward > 0.0D) ? 45 : -45);
-        } 
-        strafe = 0.0D;
-        if (forward > 0.0D) {
-          forward = 1.0D;
-        } else if (forward < 0.0D) {
-          forward = -1.0D;
-        } 
-      } 
-      double x = forward * speed * -Math.sin(Math.toRadians(yaw)) + strafe * speed * Math.cos(Math.toRadians(yaw));
-      double z = forward * speed * Math.cos(Math.toRadians(yaw)) - strafe * speed * -Math.sin(Math.toRadians(yaw));
-      event.setX(x);
-      event.setZ(z);
-      mc.player.motionX = x;
-      mc.player.motionZ = z;
-    } 
-  }
-  
-  public void onTick() {
-    float yaw;
-    if (!mc.player.isElytraFlying())
-      return; 
-    switch ((Mode)this.mode.getValue()) {
-      case BOOST:
-        if (mc.player.isInWater()) {
-          mc.getConnection().sendPacket((Packet)new CPacketEntityAction((Entity)mc.player, CPacketEntityAction.Action.START_FALL_FLYING));
-          return;
-        } 
-        if (mc.gameSettings.keyBindJump.isKeyDown()) {
-          mc.player.motionY += 0.08D;
-        } else if (mc.gameSettings.keyBindSneak.isKeyDown()) {
-          mc.player.motionY -= 0.04D;
-        } 
-        if (mc.gameSettings.keyBindForward.isKeyDown()) {
-          float f = (float)Math.toRadians(mc.player.rotationYaw);
-          mc.player.motionX -= (MathHelper.sin(f) * 0.05F);
-          mc.player.motionZ += (MathHelper.cos(f) * 0.05F);
-          break;
-        } 
-        if (!mc.gameSettings.keyBindBack.isKeyDown())
-          break; 
-        yaw = (float)Math.toRadians(mc.player.rotationYaw);
-        mc.player.motionX += (MathHelper.sin(yaw) * 0.05F);
-        mc.player.motionZ -= (MathHelper.cos(yaw) * 0.05F);
-        break;
-      case FLY:
-        mc.player.capabilities.isFlying = true;
-        break;
-    } 
-  }
-  
-  @SubscribeEvent
-  public void onUpdateWalkingPlayer(UpdateWalkingPlayerEvent event) {
-    double rotationYaw;
-    if (mc.player.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() != Items.ELYTRA)
-      return; 
-    switch (event.getStage()) {
-      case 0:
-        if (((Boolean)this.disableInLiquid.getValue()).booleanValue() && (mc.player.isInWater() || mc.player.isInLava())) {
-          if (mc.player.isElytraFlying())
-            mc.getConnection().sendPacket((Packet)new CPacketEntityAction((Entity)mc.player, CPacketEntityAction.Action.START_FALL_FLYING)); 
-          return;
-        } 
-        if (((Boolean)this.autoStart.getValue()).booleanValue() && mc.gameSettings.keyBindJump.isKeyDown() && !mc.player.isElytraFlying() && mc.player.motionY < 0.0D && this.timer.passedMs(250L)) {
-          mc.getConnection().sendPacket((Packet)new CPacketEntityAction((Entity)mc.player, CPacketEntityAction.Action.START_FALL_FLYING));
-          this.timer.reset();
-        } 
-        if (this.mode.getValue() == Mode.BETTER) {
-          double[] dir = MathUtil.directionSpeed((((Integer)this.devMode.getValue()).intValue() == 1) ? ((Float)this.speed.getValue()).floatValue() : ((Float)this.hSpeed.getValue()).floatValue());
-          switch (((Integer)this.devMode.getValue()).intValue()) {
-            case 1:
-              mc.player.setVelocity(0.0D, 0.0D, 0.0D);
-              mc.player.jumpMovementFactor = ((Float)this.speed.getValue()).floatValue();
-              if (mc.gameSettings.keyBindJump.isKeyDown())
-                mc.player.motionY += ((Float)this.speed.getValue()).floatValue(); 
-              if (mc.gameSettings.keyBindSneak.isKeyDown())
-                mc.player.motionY -= ((Float)this.speed.getValue()).floatValue(); 
-              if (mc.player.movementInput.moveStrafe != 0.0F || mc.player.movementInput.moveForward != 0.0F) {
-                mc.player.motionX = dir[0];
-                mc.player.motionZ = dir[1];
+            if (forward != 0.0) {
+                if (strafe > 0.0) {
+                    yaw += (float)(forward > 0.0 ? -45 : 45);
+                } else if (strafe < 0.0) {
+                    yaw += (float)(forward > 0.0 ? 45 : -45);
+                }
+                strafe = 0.0;
+                if (forward > 0.0) {
+                    forward = 1.0;
+                } else if (forward < 0.0) {
+                    forward = -1.0;
+                }
+            }
+            double x = forward * speed * -Math.sin(Math.toRadians(yaw)) + strafe * speed * Math.cos(Math.toRadians(yaw));
+            double z = forward * speed * Math.cos(Math.toRadians(yaw)) - strafe * speed * -Math.sin(Math.toRadians(yaw));
+            event.setX(x);
+            event.setZ(z);
+            ElytraFlight.mc.player.motionX = x;
+            ElytraFlight.mc.player.motionZ = z;
+        }
+    }
+
+    @Override
+    public void onTick() {
+        if (!ElytraFlight.mc.player.isElytraFlying()) {
+            return;
+        }
+        switch (this.mode.getValue()) {
+            case BOOST: {
+                if (ElytraFlight.mc.player.isInWater()) {
+                    mc.getConnection().sendPacket((Packet)new CPacketEntityAction((Entity)ElytraFlight.mc.player, CPacketEntityAction.Action.START_FALL_FLYING));
+                    return;
+                }
+                if (ElytraFlight.mc.gameSettings.keyBindJump.isKeyDown()) {
+                    ElytraFlight.mc.player.motionY += 0.08;
+                } else if (ElytraFlight.mc.gameSettings.keyBindSneak.isKeyDown()) {
+                    ElytraFlight.mc.player.motionY -= 0.04;
+                }
+                if (ElytraFlight.mc.gameSettings.keyBindForward.isKeyDown()) {
+                    float yaw = (float)Math.toRadians(ElytraFlight.mc.player.rotationYaw);
+                    ElytraFlight.mc.player.motionX -= (double)(MathHelper.sin((float)yaw) * 0.05f);
+                    ElytraFlight.mc.player.motionZ += (double)(MathHelper.cos((float)yaw) * 0.05f);
+                    break;
+                }
+                if (!ElytraFlight.mc.gameSettings.keyBindBack.isKeyDown()) break;
+                float yaw = (float)Math.toRadians(ElytraFlight.mc.player.rotationYaw);
+                ElytraFlight.mc.player.motionX += (double)(MathHelper.sin((float)yaw) * 0.05f);
+                ElytraFlight.mc.player.motionZ -= (double)(MathHelper.cos((float)yaw) * 0.05f);
                 break;
-              } 
-              mc.player.motionX = 0.0D;
-              mc.player.motionZ = 0.0D;
-              break;
-            case 2:
-              if (mc.player.isElytraFlying()) {
-                if (this.flyHeight == null)
-                  this.flyHeight = Double.valueOf(mc.player.posY); 
-              } else {
-                this.flyHeight = null;
-                return;
-              } 
-              if (((Boolean)this.noKick.getValue()).booleanValue())
-                this.flyHeight = Double.valueOf(this.flyHeight.doubleValue() - ((Float)this.glide.getValue()).floatValue()); 
-              this.posX = Double.valueOf(0.0D);
-              this.posZ = Double.valueOf(0.0D);
-              if (mc.player.movementInput.moveStrafe != 0.0F || mc.player.movementInput.moveForward != 0.0F) {
-                this.posX = Double.valueOf(dir[0]);
-                this.posZ = Double.valueOf(dir[1]);
-              } 
-              if (mc.gameSettings.keyBindJump.isKeyDown())
-                this.flyHeight = Double.valueOf(mc.player.posY + ((Float)this.vSpeed.getValue()).floatValue()); 
-              if (mc.gameSettings.keyBindSneak.isKeyDown())
-                this.flyHeight = Double.valueOf(mc.player.posY - ((Float)this.vSpeed.getValue()).floatValue()); 
-              mc.player.setPosition(mc.player.posX + this.posX.doubleValue(), this.flyHeight.doubleValue(), mc.player.posZ + this.posZ.doubleValue());
-              mc.player.setVelocity(0.0D, 0.0D, 0.0D);
-              break;
-            case 3:
-              if (mc.player.isElytraFlying()) {
-                if (this.flyHeight == null || this.posX == null || this.posX.doubleValue() == 0.0D || this.posZ == null || this.posZ.doubleValue() == 0.0D) {
-                  this.flyHeight = Double.valueOf(mc.player.posY);
-                  this.posX = Double.valueOf(mc.player.posX);
-                  this.posZ = Double.valueOf(mc.player.posZ);
-                } 
-              } else {
-                this.flyHeight = null;
-                this.posX = null;
-                this.posZ = null;
-                return;
-              } 
-              if (((Boolean)this.noKick.getValue()).booleanValue())
-                this.flyHeight = Double.valueOf(this.flyHeight.doubleValue() - ((Float)this.glide.getValue()).floatValue()); 
-              if (mc.player.movementInput.moveStrafe != 0.0F || mc.player.movementInput.moveForward != 0.0F) {
-                this.posX = Double.valueOf(this.posX.doubleValue() + dir[0]);
-                this.posZ = Double.valueOf(this.posZ.doubleValue() + dir[1]);
-              } 
-              if (((Boolean)this.allowUp.getValue()).booleanValue() && mc.gameSettings.keyBindJump.isKeyDown())
-                this.flyHeight = Double.valueOf(mc.player.posY + (((Float)this.vSpeed.getValue()).floatValue() / 10.0F)); 
-              if (mc.gameSettings.keyBindSneak.isKeyDown())
-                this.flyHeight = Double.valueOf(mc.player.posY - (((Float)this.vSpeed.getValue()).floatValue() / 10.0F)); 
-              mc.player.setPosition(this.posX.doubleValue(), this.flyHeight.doubleValue(), this.posZ.doubleValue());
-              mc.player.setVelocity(0.0D, 0.0D, 0.0D);
-              break;
-          } 
-        } 
-        rotationYaw = Math.toRadians(mc.player.rotationYaw);
-        if (mc.player.isElytraFlying()) {
-          float speedScaled;
-          double[] directionSpeedPacket;
-          double[] directionSpeedBypass;
-          switch ((Mode)this.mode.getValue()) {
-            case VANILLA:
-              speedScaled = ((Float)this.speed.getValue()).floatValue() * 0.05F;
-              if (mc.gameSettings.keyBindJump.isKeyDown())
-                mc.player.motionY += speedScaled; 
-              if (mc.gameSettings.keyBindSneak.isKeyDown())
-                mc.player.motionY -= speedScaled; 
-              if (mc.gameSettings.keyBindForward.isKeyDown()) {
-                mc.player.motionX -= Math.sin(rotationYaw) * speedScaled;
-                mc.player.motionZ += Math.cos(rotationYaw) * speedScaled;
-              } 
-              if (!mc.gameSettings.keyBindBack.isKeyDown())
-                break; 
-              mc.player.motionX += Math.sin(rotationYaw) * speedScaled;
-              mc.player.motionZ -= Math.cos(rotationYaw) * speedScaled;
-              break;
-            case PACKET:
-              freezePlayer((EntityPlayer)mc.player);
-              runNoKick((EntityPlayer)mc.player);
-              directionSpeedPacket = MathUtil.directionSpeed(((Float)this.speed.getValue()).floatValue());
-              if (mc.player.movementInput.jump)
-                mc.player.motionY = ((Float)this.speed.getValue()).floatValue(); 
-              if (mc.player.movementInput.sneak)
-                mc.player.motionY = -((Float)this.speed.getValue()).floatValue(); 
-              if (mc.player.movementInput.moveStrafe != 0.0F || mc.player.movementInput.moveForward != 0.0F) {
-                mc.player.motionX = directionSpeedPacket[0];
-                mc.player.motionZ = directionSpeedPacket[1];
-              } 
-              mc.getConnection().sendPacket((Packet)new CPacketEntityAction((Entity)mc.player, CPacketEntityAction.Action.START_FALL_FLYING));
-              mc.getConnection().sendPacket((Packet)new CPacketEntityAction((Entity)mc.player, CPacketEntityAction.Action.START_FALL_FLYING));
-              break;
-            case BYPASS:
-              if (((Integer)this.devMode.getValue()).intValue() != 3)
-                break; 
-              if (mc.gameSettings.keyBindJump.isKeyDown())
-                mc.player.motionY = 0.019999999552965164D; 
-              if (mc.gameSettings.keyBindSneak.isKeyDown())
-                mc.player.motionY = -0.20000000298023224D; 
-              if (mc.player.ticksExisted % 8 == 0 && mc.player.posY <= 240.0D)
-                mc.player.motionY = 0.019999999552965164D; 
-              mc.player.capabilities.isFlying = true;
-              mc.player.capabilities.setFlySpeed(0.025F);
-              directionSpeedBypass = MathUtil.directionSpeed(0.5199999809265137D);
-              if (mc.player.movementInput.moveStrafe != 0.0F || mc.player.movementInput.moveForward != 0.0F) {
-                mc.player.motionX = directionSpeedBypass[0];
-                mc.player.motionZ = directionSpeedBypass[1];
+            }
+            case FLY: {
+                ElytraFlight.mc.player.capabilities.isFlying = true;
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onUpdateWalkingPlayer(UpdateWalkingPlayerEvent event) {
+        if (ElytraFlight.mc.player.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() != Items.ELYTRA) {
+            return;
+        }
+        switch (event.getStage()) {
+            case 0: {
+                if (this.disableInLiquid.getValue().booleanValue() && (ElytraFlight.mc.player.isInWater() || ElytraFlight.mc.player.isInLava())) {
+                    if (ElytraFlight.mc.player.isElytraFlying()) {
+                        mc.getConnection().sendPacket((Packet)new CPacketEntityAction((Entity)ElytraFlight.mc.player, CPacketEntityAction.Action.START_FALL_FLYING));
+                    }
+                    return;
+                }
+                if (this.autoStart.getValue().booleanValue() && ElytraFlight.mc.gameSettings.keyBindJump.isKeyDown() && !ElytraFlight.mc.player.isElytraFlying() && ElytraFlight.mc.player.motionY < 0.0 && this.timer.passedMs(250L)) {
+                    mc.getConnection().sendPacket((Packet)new CPacketEntityAction((Entity)ElytraFlight.mc.player, CPacketEntityAction.Action.START_FALL_FLYING));
+                    this.timer.reset();
+                }
+                if (this.mode.getValue() == Mode.BETTER) {
+                    double[] dir = MathUtil.directionSpeed(this.devMode.getValue() == 1 ? (double)this.speed.getValue().floatValue() : (double)this.hSpeed.getValue().floatValue());
+                    switch (this.devMode.getValue()) {
+                        case 1: {
+                            ElytraFlight.mc.player.setVelocity(0.0, 0.0, 0.0);
+                            ElytraFlight.mc.player.jumpMovementFactor = this.speed.getValue().floatValue();
+                            if (ElytraFlight.mc.gameSettings.keyBindJump.isKeyDown()) {
+                                ElytraFlight.mc.player.motionY += (double)this.speed.getValue().floatValue();
+                            }
+                            if (ElytraFlight.mc.gameSettings.keyBindSneak.isKeyDown()) {
+                                ElytraFlight.mc.player.motionY -= (double)this.speed.getValue().floatValue();
+                            }
+                            if (ElytraFlight.mc.player.movementInput.moveStrafe != 0.0f || ElytraFlight.mc.player.movementInput.moveForward != 0.0f) {
+                                ElytraFlight.mc.player.motionX = dir[0];
+                                ElytraFlight.mc.player.motionZ = dir[1];
+                                break;
+                            }
+                            ElytraFlight.mc.player.motionX = 0.0;
+                            ElytraFlight.mc.player.motionZ = 0.0;
+                            break;
+                        }
+                        case 2: {
+                            if (ElytraFlight.mc.player.isElytraFlying()) {
+                                if (this.flyHeight == null) {
+                                    this.flyHeight = ElytraFlight.mc.player.posY;
+                                }
+                            } else {
+                                this.flyHeight = null;
+                                return;
+                            }
+                            if (this.noKick.getValue().booleanValue()) {
+                                this.flyHeight = this.flyHeight - (double)this.glide.getValue().floatValue();
+                            }
+                            this.posX = 0.0;
+                            this.posZ = 0.0;
+                            if (ElytraFlight.mc.player.movementInput.moveStrafe != 0.0f || ElytraFlight.mc.player.movementInput.moveForward != 0.0f) {
+                                this.posX = dir[0];
+                                this.posZ = dir[1];
+                            }
+                            if (ElytraFlight.mc.gameSettings.keyBindJump.isKeyDown()) {
+                                this.flyHeight = ElytraFlight.mc.player.posY + (double)this.vSpeed.getValue().floatValue();
+                            }
+                            if (ElytraFlight.mc.gameSettings.keyBindSneak.isKeyDown()) {
+                                this.flyHeight = ElytraFlight.mc.player.posY - (double)this.vSpeed.getValue().floatValue();
+                            }
+                            ElytraFlight.mc.player.setPosition(ElytraFlight.mc.player.posX + this.posX, this.flyHeight.doubleValue(), ElytraFlight.mc.player.posZ + this.posZ);
+                            ElytraFlight.mc.player.setVelocity(0.0, 0.0, 0.0);
+                            break;
+                        }
+                        case 3: {
+                            if (ElytraFlight.mc.player.isElytraFlying()) {
+                                if (this.flyHeight == null || this.posX == null || this.posX == 0.0 || this.posZ == null || this.posZ == 0.0) {
+                                    this.flyHeight = ElytraFlight.mc.player.posY;
+                                    this.posX = ElytraFlight.mc.player.posX;
+                                    this.posZ = ElytraFlight.mc.player.posZ;
+                                }
+                            } else {
+                                this.flyHeight = null;
+                                this.posX = null;
+                                this.posZ = null;
+                                return;
+                            }
+                            if (this.noKick.getValue().booleanValue()) {
+                                this.flyHeight = this.flyHeight - (double)this.glide.getValue().floatValue();
+                            }
+                            if (ElytraFlight.mc.player.movementInput.moveStrafe != 0.0f || ElytraFlight.mc.player.movementInput.moveForward != 0.0f) {
+                                this.posX = this.posX + dir[0];
+                                this.posZ = this.posZ + dir[1];
+                            }
+                            if (this.allowUp.getValue().booleanValue() && ElytraFlight.mc.gameSettings.keyBindJump.isKeyDown()) {
+                                this.flyHeight = ElytraFlight.mc.player.posY + (double)(this.vSpeed.getValue().floatValue() / 10.0f);
+                            }
+                            if (ElytraFlight.mc.gameSettings.keyBindSneak.isKeyDown()) {
+                                this.flyHeight = ElytraFlight.mc.player.posY - (double)(this.vSpeed.getValue().floatValue() / 10.0f);
+                            }
+                            ElytraFlight.mc.player.setPosition(this.posX.doubleValue(), this.flyHeight.doubleValue(), this.posZ.doubleValue());
+                            ElytraFlight.mc.player.setVelocity(0.0, 0.0, 0.0);
+                        }
+                    }
+                }
+                double rotationYaw = Math.toRadians(ElytraFlight.mc.player.rotationYaw);
+                if (ElytraFlight.mc.player.isElytraFlying()) {
+                    switch (this.mode.getValue()) {
+                        case VANILLA: {
+                            float speedScaled = this.speed.getValue().floatValue() * 0.05f;
+                            if (ElytraFlight.mc.gameSettings.keyBindJump.isKeyDown()) {
+                                ElytraFlight.mc.player.motionY += (double)speedScaled;
+                            }
+                            if (ElytraFlight.mc.gameSettings.keyBindSneak.isKeyDown()) {
+                                ElytraFlight.mc.player.motionY -= (double)speedScaled;
+                            }
+                            if (ElytraFlight.mc.gameSettings.keyBindForward.isKeyDown()) {
+                                ElytraFlight.mc.player.motionX -= Math.sin(rotationYaw) * (double)speedScaled;
+                                ElytraFlight.mc.player.motionZ += Math.cos(rotationYaw) * (double)speedScaled;
+                            }
+                            if (!ElytraFlight.mc.gameSettings.keyBindBack.isKeyDown()) break;
+                            ElytraFlight.mc.player.motionX += Math.sin(rotationYaw) * (double)speedScaled;
+                            ElytraFlight.mc.player.motionZ -= Math.cos(rotationYaw) * (double)speedScaled;
+                            break;
+                        }
+                        case PACKET: {
+                            this.freezePlayer((EntityPlayer)ElytraFlight.mc.player);
+                            this.runNoKick((EntityPlayer)ElytraFlight.mc.player);
+                            double[] directionSpeedPacket = MathUtil.directionSpeed(this.speed.getValue().floatValue());
+                            if (ElytraFlight.mc.player.movementInput.jump) {
+                                ElytraFlight.mc.player.motionY = this.speed.getValue().floatValue();
+                            }
+                            if (ElytraFlight.mc.player.movementInput.sneak) {
+                                ElytraFlight.mc.player.motionY = -this.speed.getValue().floatValue();
+                            }
+                            if (ElytraFlight.mc.player.movementInput.moveStrafe != 0.0f || ElytraFlight.mc.player.movementInput.moveForward != 0.0f) {
+                                ElytraFlight.mc.player.motionX = directionSpeedPacket[0];
+                                ElytraFlight.mc.player.motionZ = directionSpeedPacket[1];
+                            }
+                            mc.getConnection().sendPacket((Packet)new CPacketEntityAction((Entity)ElytraFlight.mc.player, CPacketEntityAction.Action.START_FALL_FLYING));
+                            mc.getConnection().sendPacket((Packet)new CPacketEntityAction((Entity)ElytraFlight.mc.player, CPacketEntityAction.Action.START_FALL_FLYING));
+                            break;
+                        }
+                        case BYPASS: {
+                            if (this.devMode.getValue() != 3) break;
+                            if (ElytraFlight.mc.gameSettings.keyBindJump.isKeyDown()) {
+                                ElytraFlight.mc.player.motionY = 0.02f;
+                            }
+                            if (ElytraFlight.mc.gameSettings.keyBindSneak.isKeyDown()) {
+                                ElytraFlight.mc.player.motionY = -0.2f;
+                            }
+                            if (ElytraFlight.mc.player.ticksExisted % 8 == 0 && ElytraFlight.mc.player.posY <= 240.0) {
+                                ElytraFlight.mc.player.motionY = 0.02f;
+                            }
+                            ElytraFlight.mc.player.capabilities.isFlying = true;
+                            ElytraFlight.mc.player.capabilities.setFlySpeed(0.025f);
+                            double[] directionSpeedBypass = MathUtil.directionSpeed(0.52f);
+                            if (ElytraFlight.mc.player.movementInput.moveStrafe != 0.0f || ElytraFlight.mc.player.movementInput.moveForward != 0.0f) {
+                                ElytraFlight.mc.player.motionX = directionSpeedBypass[0];
+                                ElytraFlight.mc.player.motionZ = directionSpeedBypass[1];
+                                break;
+                            }
+                            ElytraFlight.mc.player.motionX = 0.0;
+                            ElytraFlight.mc.player.motionZ = 0.0;
+                        }
+                    }
+                }
+                if (!this.infiniteDura.getValue().booleanValue()) break;
+                ElytraFlight.mc.player.connection.sendPacket((Packet)new CPacketEntityAction((Entity)ElytraFlight.mc.player, CPacketEntityAction.Action.START_FALL_FLYING));
                 break;
-              } 
-              mc.player.motionX = 0.0D;
-              mc.player.motionZ = 0.0D;
-              break;
-          } 
-        } 
-        if (!((Boolean)this.infiniteDura.getValue()).booleanValue())
-          break; 
-        mc.player.connection.sendPacket((Packet)new CPacketEntityAction((Entity)mc.player, CPacketEntityAction.Action.START_FALL_FLYING));
-        break;
-      case 1:
-        if (!((Boolean)this.infiniteDura.getValue()).booleanValue())
-          break; 
-        mc.player.connection.sendPacket((Packet)new CPacketEntityAction((Entity)mc.player, CPacketEntityAction.Action.START_FALL_FLYING));
-        break;
-    } 
-  }
-  
-  private double[] forwardStrafeYaw(double forward, double strafe, double yaw) {
-    double[] result = { forward, strafe, yaw };
-    if ((forward != 0.0D || strafe != 0.0D) && forward != 0.0D) {
-      if (strafe > 0.0D) {
-        result[2] = result[2] + ((forward > 0.0D) ? -45 : 45);
-      } else if (strafe < 0.0D) {
-        result[2] = result[2] + ((forward > 0.0D) ? 45 : -45);
-      } 
-      result[1] = 0.0D;
-      if (forward > 0.0D) {
-        result[0] = 1.0D;
-      } else if (forward < 0.0D) {
-        result[0] = -1.0D;
-      } 
-    } 
-    return result;
-  }
-  
-  private void freezePlayer(EntityPlayer player) {
-    player.motionX = 0.0D;
-    player.motionY = 0.0D;
-    player.motionZ = 0.0D;
-  }
-  
-  private void runNoKick(EntityPlayer player) {
-    if (((Boolean)this.noKick.getValue()).booleanValue() && !player.isElytraFlying() && player.ticksExisted % 4 == 0)
-      player.motionY = -0.03999999910593033D; 
-  }
-  
-  public void onDisable() {
-    if (fullNullCheck() || mc.player.capabilities.isCreativeMode)
-      return; 
-    mc.player.capabilities.isFlying = false;
-  }
-  
-  public enum Mode {
-    VANILLA, PACKET, BOOST, FLY, BYPASS, BETTER, OHARE, TOOBEE, TOOBEEBYPASS;
-  }
+            }
+            case 1: {
+                if (!this.infiniteDura.getValue().booleanValue()) break;
+                ElytraFlight.mc.player.connection.sendPacket((Packet)new CPacketEntityAction((Entity)ElytraFlight.mc.player, CPacketEntityAction.Action.START_FALL_FLYING));
+            }
+        }
+    }
+
+    private double[] forwardStrafeYaw(double forward, double strafe, double yaw) {
+        double[] result = new double[]{forward, strafe, yaw};
+        if ((forward != 0.0 || strafe != 0.0) && forward != 0.0) {
+            if (strafe > 0.0) {
+                result[2] = result[2] + (double)(forward > 0.0 ? -45 : 45);
+            } else if (strafe < 0.0) {
+                result[2] = result[2] + (double)(forward > 0.0 ? 45 : -45);
+            }
+            result[1] = 0.0;
+            if (forward > 0.0) {
+                result[0] = 1.0;
+            } else if (forward < 0.0) {
+                result[0] = -1.0;
+            }
+        }
+        return result;
+    }
+
+    private void freezePlayer(EntityPlayer player) {
+        player.motionX = 0.0;
+        player.motionY = 0.0;
+        player.motionZ = 0.0;
+    }
+
+    private void runNoKick(EntityPlayer player) {
+        if (this.noKick.getValue().booleanValue() && !player.isElytraFlying() && player.ticksExisted % 4 == 0) {
+            player.motionY = -0.04f;
+        }
+    }
+
+    @Override
+    public void onDisable() {
+        if (ElytraFlight.fullNullCheck() || ElytraFlight.mc.player.capabilities.isCreativeMode) {
+            return;
+        }
+        ElytraFlight.mc.player.capabilities.isFlying = false;
+    }
+
+    public static enum Mode {
+        VANILLA,
+        PACKET,
+        BOOST,
+        FLY,
+        BYPASS,
+        BETTER,
+        OHARE,
+        TOOBEE,
+        TOOBEEBYPASS;
+
+    }
 }
+

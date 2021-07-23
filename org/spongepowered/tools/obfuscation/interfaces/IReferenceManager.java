@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.tools.obfuscation.interfaces;
 
 import org.spongepowered.asm.mixin.injection.struct.MemberInfo;
@@ -7,19 +10,20 @@ import org.spongepowered.asm.obfuscation.mapping.common.MappingMethod;
 import org.spongepowered.tools.obfuscation.ObfuscationData;
 
 public interface IReferenceManager {
-  void setAllowConflicts(boolean paramBoolean);
-  
-  boolean getAllowConflicts();
-  
-  void write();
-  
-  ReferenceMapper getMapper();
-  
-  void addMethodMapping(String paramString1, String paramString2, ObfuscationData<MappingMethod> paramObfuscationData);
-  
-  void addMethodMapping(String paramString1, String paramString2, MemberInfo paramMemberInfo, ObfuscationData<MappingMethod> paramObfuscationData);
-  
-  void addFieldMapping(String paramString1, String paramString2, MemberInfo paramMemberInfo, ObfuscationData<MappingField> paramObfuscationData);
-  
-  void addClassMapping(String paramString1, String paramString2, ObfuscationData<String> paramObfuscationData);
+    public void setAllowConflicts(boolean var1);
+
+    public boolean getAllowConflicts();
+
+    public void write();
+
+    public ReferenceMapper getMapper();
+
+    public void addMethodMapping(String var1, String var2, ObfuscationData<MappingMethod> var3);
+
+    public void addMethodMapping(String var1, String var2, MemberInfo var3, ObfuscationData<MappingMethod> var4);
+
+    public void addFieldMapping(String var1, String var2, MemberInfo var3, ObfuscationData<MappingField> var4);
+
+    public void addClassMapping(String var1, String var2, ObfuscationData<String> var3);
 }
+

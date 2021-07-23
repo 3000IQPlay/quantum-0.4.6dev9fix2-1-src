@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.mixin.mixins;
 
 import me.alpha432.oyvey.OyVey;
@@ -13,27 +16,32 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin({GuiIngame.class})
-public class MixinGuiIngame extends Gui {
-  @Shadow
-  @Final
-  public GuiNewChat persistantChatGUI;
-  
-  @Inject(method = {"renderPortal"}, at = {@At("HEAD")}, cancellable = true)
-  protected void renderPortalHook(float n, ScaledResolution scaledResolution, CallbackInfo info) {
-    if (NoRender.getInstance().isOn() && ((Boolean)(NoRender.getInstance()).portal.getValue()).booleanValue())
-      info.cancel(); 
-  }
-  
-  @Inject(method = {"renderPumpkinOverlay"}, at = {@At("HEAD")}, cancellable = true)
-  protected void renderPumpkinOverlayHook(ScaledResolution scaledRes, CallbackInfo info) {
-    if (NoRender.getInstance().isOn() && ((Boolean)(NoRender.getInstance()).pumpkin.getValue()).booleanValue())
-      info.cancel(); 
-  }
-  
-  @Inject(method = {"renderPotionEffects"}, at = {@At("HEAD")}, cancellable = true)
-  protected void renderPotionEffectsHook(ScaledResolution scaledRes, CallbackInfo info) {
-    if (OyVey.moduleManager != null)
-      info.cancel(); 
-  }
+@Mixin(value={GuiIngame.class})
+public class MixinGuiIngame
+extends Gui {
+    @Shadow
+    @Final
+    public GuiNewChat persistantChatGUI;
+
+    @Inject(method={"renderPortal"}, at={@At(value="HEAD")}, cancellable=true)
+    protected void renderPortalHook(float n, ScaledResolution scaledResolution, CallbackInfo info) {
+        if (NoRender.getInstance().isOn() && NoRender.getInstance().portal.getValue().booleanValue()) {
+            info.cancel();
+        }
+    }
+
+    @Inject(method={"renderPumpkinOverlay"}, at={@At(value="HEAD")}, cancellable=true)
+    protected void renderPumpkinOverlayHook(ScaledResolution scaledRes, CallbackInfo info) {
+        if (NoRender.getInstance().isOn() && NoRender.getInstance().pumpkin.getValue().booleanValue()) {
+            info.cancel();
+        }
+    }
+
+    @Inject(method={"renderPotionEffects"}, at={@At(value="HEAD")}, cancellable=true)
+    protected void renderPotionEffectsHook(ScaledResolution scaledRes, CallbackInfo info) {
+        if (OyVey.moduleManager != null) {
+            info.cancel();
+        }
+    }
 }
+

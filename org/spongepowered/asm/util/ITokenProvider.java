@@ -1,5 +1,9 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.util;
 
 public interface ITokenProvider {
-  Integer getToken(String paramString);
+    public Integer getToken(String var1);
 }
+

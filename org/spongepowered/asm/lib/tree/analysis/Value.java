@@ -1,5 +1,9 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.lib.tree.analysis;
 
 public interface Value {
-  int getSize();
+    public int getSize();
 }
+

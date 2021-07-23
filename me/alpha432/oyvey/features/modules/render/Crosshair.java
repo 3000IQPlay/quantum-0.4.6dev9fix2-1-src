@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.features.modules.render;
 
 import java.awt.Color;
@@ -8,68 +11,53 @@ import me.alpha432.oyvey.util.RenderUtil;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-public class Crosshair extends Module {
-  private final Setting<Boolean> dynamic;
-  
-  private final Setting<Float> width;
-  
-  private final Setting<Float> gap;
-  
-  private final Setting<Float> length;
-  
-  private final Setting<Float> dynamicGap;
-  
-  private final Setting<Integer> red;
-  
-  private final Setting<Integer> green;
-  
-  private final Setting<Integer> blue;
-  
-  private final Setting<Integer> alpha;
-  
-  public static Crosshair INSTANCE;
-  
-  public Crosshair() {
-    super("Crosshair", "", Module.Category.RENDER, true, false, false);
-    this.dynamic = register(new Setting("Dynamic", Boolean.valueOf(true)));
-    this.width = register(new Setting("Width", Float.valueOf(1.0F), Float.valueOf(0.5F), Float.valueOf(10.0F)));
-    this.gap = register(new Setting("Gap", Float.valueOf(3.0F), Float.valueOf(0.5F), Float.valueOf(10.0F)));
-    this.length = register(new Setting("Length", Float.valueOf(7.0F), Float.valueOf(0.5F), Float.valueOf(100.0F)));
-    this.dynamicGap = register(new Setting("DynamicGap", Float.valueOf(1.5F), Float.valueOf(0.5F), Float.valueOf(10.0F)));
-    this.red = register(new Setting("Red", Integer.valueOf(255), Integer.valueOf(0), Integer.valueOf(255)));
-    this.green = register(new Setting("Green", Integer.valueOf(255), Integer.valueOf(0), Integer.valueOf(255)));
-    this.blue = register(new Setting("Blue", Integer.valueOf(255), Integer.valueOf(0), Integer.valueOf(255)));
-    this.alpha = register(new Setting("Alpha", Integer.valueOf(255), Integer.valueOf(0), Integer.valueOf(255)));
-    INSTANCE = this;
-  }
-  
-  @SubscribeEvent
-  public void onRender2D(Render2DEvent event) {
-    int color = (new Color(((Integer)this.red.getValue()).intValue(), ((Integer)this.green.getValue()).intValue(), ((Integer)this.blue.getValue()).intValue(), ((Integer)this.alpha.getValue()).intValue())).getRGB();
-    ScaledResolution resolution = new ScaledResolution(mc);
-    float middlex = resolution.getScaledWidth() / 2.0F;
-    float middley = resolution.getScaledHeight() / 2.0F;
-    RenderUtil.drawBordered(middlex - ((Float)this.width.getValue()).floatValue(), middley - ((Float)this.gap.getValue()).floatValue() + ((Float)this.length.getValue()).floatValue() - ((isMoving() && ((Boolean)this.dynamic.getValue()).booleanValue()) ? ((Float)this.dynamicGap.getValue()).floatValue() : 0.0F), middlex + ((Float)this.width.getValue()).floatValue(), middley - ((Float)this.gap.getValue()).floatValue() - ((isMoving() && ((Boolean)this.dynamic.getValue()).booleanValue()) ? ((Float)this.dynamicGap.getValue()).floatValue() : 0.0F), 0.5F, color, -16777216);
-    RenderUtil.drawBordered(middlex - ((Float)this.width.getValue()).floatValue(), middley + ((Float)this.gap.getValue()).floatValue() + ((isMoving() && ((Boolean)this.dynamic.getValue()).booleanValue()) ? ((Float)this.dynamicGap.getValue()).floatValue() : 0.0F), middlex + ((Float)this.width.getValue()).floatValue(), middley + ((Float)this.gap.getValue()).floatValue() + ((Float)this.length.getValue()).floatValue() + ((isMoving() && ((Boolean)this.dynamic.getValue()).booleanValue()) ? ((Float)this.dynamicGap.getValue()).floatValue() : 0.0F), 0.5F, color, -16777216);
-    RenderUtil.drawBordered(middlex - ((Float)this.gap.getValue()).floatValue() + ((Float)this.length.getValue()).floatValue() - ((isMoving() && ((Boolean)this.dynamic.getValue()).booleanValue()) ? ((Float)this.dynamicGap.getValue()).floatValue() : 0.0F), middley - ((Float)this.width.getValue()).floatValue(), middlex - ((Float)this.gap.getValue()).floatValue() - ((isMoving() && ((Boolean)this.dynamic.getValue()).booleanValue()) ? ((Float)this.dynamicGap.getValue()).floatValue() : 0.0F), middley + ((Float)this.width.getValue()).floatValue(), 0.5F, color, -16777216);
-    RenderUtil.drawBordered(middlex + ((Float)this.gap.getValue()).floatValue() + ((isMoving() && ((Boolean)this.dynamic.getValue()).booleanValue()) ? ((Float)this.dynamicGap.getValue()).floatValue() : 0.0F), middley - ((Float)this.width.getValue()).floatValue(), middlex + ((Float)this.gap.getValue()).floatValue() + ((Float)this.length.getValue()).floatValue() + ((isMoving() && ((Boolean)this.dynamic.getValue()).booleanValue()) ? ((Float)this.dynamicGap.getValue()).floatValue() : 0.0F), middley + ((Float)this.width.getValue()).floatValue(), 0.5F, color, -16777216);
-  }
-  
-  public boolean isMoving() {
-    return (mc.player.moveForward != 0.0F || mc.player.moveStrafing != 0.0F || mc.player.moveVertical != 0.0F);
-  }
-  
-  public int color(int index, int count) {
-    float[] hsb = new float[3];
-    Color.RGBtoHSB(((Integer)this.red.getValue()).intValue(), ((Integer)this.green.getValue()).intValue(), ((Integer)this.blue.getValue()).intValue(), hsb);
-    float brightness = Math.abs((getOffset() + index / count * 2.0F) % 2.0F - 1.0F);
-    brightness = 0.4F + 0.4F * brightness;
-    hsb[2] = brightness % 1.0F;
-    Color clr = new Color(Color.HSBtoRGB(hsb[0], hsb[1], hsb[2]));
-    return (new Color(clr.getRed(), clr.getGreen(), clr.getBlue(), ((Integer)this.alpha.getValue()).intValue())).getRGB();
-  }
-  
-  private static float getOffset() {
-    return (float)(System.currentTimeMillis() % 2000L) / 1000.0F;
-  }
+public class Crosshair
+extends Module {
+    private final Setting<Boolean> dynamic = this.register(new Setting<Boolean>("Dynamic", true));
+    private final Setting<Float> width = this.register(new Setting<Float>("Width", Float.valueOf(1.0f), Float.valueOf(0.5f), Float.valueOf(10.0f)));
+    private final Setting<Float> gap = this.register(new Setting<Float>("Gap", Float.valueOf(3.0f), Float.valueOf(0.5f), Float.valueOf(10.0f)));
+    private final Setting<Float> length = this.register(new Setting<Float>("Length", Float.valueOf(7.0f), Float.valueOf(0.5f), Float.valueOf(100.0f)));
+    private final Setting<Float> dynamicGap = this.register(new Setting<Float>("DynamicGap", Float.valueOf(1.5f), Float.valueOf(0.5f), Float.valueOf(10.0f)));
+    private final Setting<Integer> red = this.register(new Setting<Integer>("Red", 255, 0, 255));
+    private final Setting<Integer> green = this.register(new Setting<Integer>("Green", 255, 0, 255));
+    private final Setting<Integer> blue = this.register(new Setting<Integer>("Blue", 255, 0, 255));
+    private final Setting<Integer> alpha = this.register(new Setting<Integer>("Alpha", 255, 0, 255));
+    public static Crosshair INSTANCE;
+
+    public Crosshair() {
+        super("Crosshair", "", Module.Category.RENDER, true, false, false);
+        INSTANCE = this;
+    }
+
+    @Override
+    @SubscribeEvent
+    public void onRender2D(Render2DEvent event) {
+        int color = new Color(this.red.getValue(), this.green.getValue(), this.blue.getValue(), this.alpha.getValue()).getRGB();
+        ScaledResolution resolution = new ScaledResolution(mc);
+        float middlex = (float)resolution.getScaledWidth() / 2.0f;
+        float middley = (float)resolution.getScaledHeight() / 2.0f;
+        RenderUtil.drawBordered(middlex - this.width.getValue().floatValue(), middley - (this.gap.getValue().floatValue() + this.length.getValue().floatValue()) - (this.isMoving() && this.dynamic.getValue() != false ? this.dynamicGap.getValue().floatValue() : 0.0f), middlex + this.width.getValue().floatValue(), middley - this.gap.getValue().floatValue() - (this.isMoving() && this.dynamic.getValue() != false ? this.dynamicGap.getValue().floatValue() : 0.0f), 0.5f, color, -16777216);
+        RenderUtil.drawBordered(middlex - this.width.getValue().floatValue(), middley + this.gap.getValue().floatValue() + (this.isMoving() && this.dynamic.getValue() != false ? this.dynamicGap.getValue().floatValue() : 0.0f), middlex + this.width.getValue().floatValue(), middley + (this.gap.getValue().floatValue() + this.length.getValue().floatValue()) + (this.isMoving() && this.dynamic.getValue() != false ? this.dynamicGap.getValue().floatValue() : 0.0f), 0.5f, color, -16777216);
+        RenderUtil.drawBordered(middlex - (this.gap.getValue().floatValue() + this.length.getValue().floatValue()) - (this.isMoving() && this.dynamic.getValue() != false ? this.dynamicGap.getValue().floatValue() : 0.0f), middley - this.width.getValue().floatValue(), middlex - this.gap.getValue().floatValue() - (this.isMoving() && this.dynamic.getValue() != false ? this.dynamicGap.getValue().floatValue() : 0.0f), middley + this.width.getValue().floatValue(), 0.5f, color, -16777216);
+        RenderUtil.drawBordered(middlex + this.gap.getValue().floatValue() + (this.isMoving() && this.dynamic.getValue() != false ? this.dynamicGap.getValue().floatValue() : 0.0f), middley - this.width.getValue().floatValue(), middlex + (this.gap.getValue().floatValue() + this.length.getValue().floatValue()) + (this.isMoving() && this.dynamic.getValue() != false ? this.dynamicGap.getValue().floatValue() : 0.0f), middley + this.width.getValue().floatValue(), 0.5f, color, -16777216);
+    }
+
+    public boolean isMoving() {
+        return Crosshair.mc.player.moveForward != 0.0f || Crosshair.mc.player.moveStrafing != 0.0f || Crosshair.mc.player.moveVertical != 0.0f;
+    }
+
+    public int color(int index, int count) {
+        float[] hsb = new float[3];
+        Color.RGBtoHSB(this.red.getValue(), this.green.getValue(), this.blue.getValue(), hsb);
+        float brightness = Math.abs((Crosshair.getOffset() + (float)index / (float)count * 2.0f) % 2.0f - 1.0f);
+        brightness = 0.4f + 0.4f * brightness;
+        hsb[2] = brightness % 1.0f;
+        Color clr = new Color(Color.HSBtoRGB(hsb[0], hsb[1], hsb[2]));
+        return new Color(clr.getRed(), clr.getGreen(), clr.getBlue(), this.alpha.getValue()).getRGB();
+    }
+
+    private static float getOffset() {
+        return (float)(System.currentTimeMillis() % 2000L) / 1000.0f;
+    }
 }
+

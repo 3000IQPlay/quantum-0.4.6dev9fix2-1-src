@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.mixin;
 
 import java.lang.annotation.ElementType;
@@ -5,10 +8,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.TYPE, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
+@Target(value={ElementType.TYPE, ElementType.METHOD})
+@Retention(value=RetentionPolicy.RUNTIME)
 public @interface Debug {
-  boolean export() default false;
-  
-  boolean print() default false;
+    public boolean export() default false;
+
+    public boolean print() default false;
 }
+

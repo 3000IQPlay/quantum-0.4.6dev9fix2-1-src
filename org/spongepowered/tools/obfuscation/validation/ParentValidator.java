@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.tools.obfuscation.validation;
 
 import java.util.Collection;
@@ -10,14 +13,18 @@ import org.spongepowered.tools.obfuscation.interfaces.IMixinValidator;
 import org.spongepowered.tools.obfuscation.mirror.AnnotationHandle;
 import org.spongepowered.tools.obfuscation.mirror.TypeHandle;
 
-public class ParentValidator extends MixinValidator {
-  public ParentValidator(IMixinAnnotationProcessor ap) {
-    super(ap, IMixinValidator.ValidationPass.EARLY);
-  }
-  
-  public boolean validate(TypeElement mixin, AnnotationHandle annotation, Collection<TypeHandle> targets) {
-    if (mixin.getEnclosingElement().getKind() != ElementKind.PACKAGE && !mixin.getModifiers().contains(Modifier.STATIC))
-      error("Inner class mixin must be declared static", mixin); 
-    return true;
-  }
+public class ParentValidator
+extends MixinValidator {
+    public ParentValidator(IMixinAnnotationProcessor ap) {
+        super(ap, IMixinValidator.ValidationPass.EARLY);
+    }
+
+    @Override
+    public boolean validate(TypeElement mixin, AnnotationHandle annotation, Collection<TypeHandle> targets) {
+        if (mixin.getEnclosingElement().getKind() != ElementKind.PACKAGE && !mixin.getModifiers().contains((Object)Modifier.STATIC)) {
+            this.error("Inner class mixin must be declared static", mixin);
+        }
+        return true;
+    }
 }
+

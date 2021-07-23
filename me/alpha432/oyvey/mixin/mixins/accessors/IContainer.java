@@ -1,11 +1,15 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.mixin.mixins.accessors;
 
 import net.minecraft.inventory.Container;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin({Container.class})
+@Mixin(value={Container.class})
 public interface IContainer {
-  @Accessor("transactionID")
-  void setTransactionID(short paramShort);
+    @Accessor(value="transactionID")
+    public void setTransactionID(short var1);
 }
+

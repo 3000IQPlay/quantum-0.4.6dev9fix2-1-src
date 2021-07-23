@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.tools.obfuscation.mapping;
 
 import java.io.File;
@@ -6,17 +9,18 @@ import org.spongepowered.asm.obfuscation.mapping.common.MappingField;
 import org.spongepowered.asm.obfuscation.mapping.common.MappingMethod;
 
 public interface IMappingProvider {
-  void clear();
-  
-  boolean isEmpty();
-  
-  void read(File paramFile) throws IOException;
-  
-  MappingMethod getMethodMapping(MappingMethod paramMappingMethod);
-  
-  MappingField getFieldMapping(MappingField paramMappingField);
-  
-  String getClassMapping(String paramString);
-  
-  String getPackageMapping(String paramString);
+    public void clear();
+
+    public boolean isEmpty();
+
+    public void read(File var1) throws IOException;
+
+    public MappingMethod getMethodMapping(MappingMethod var1);
+
+    public MappingField getFieldMapping(MappingField var1);
+
+    public String getClassMapping(String var1);
+
+    public String getPackageMapping(String var1);
 }
+

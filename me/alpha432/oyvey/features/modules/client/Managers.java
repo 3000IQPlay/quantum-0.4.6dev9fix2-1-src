@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.features.modules.client;
 
 import me.alpha432.oyvey.OyVey;
@@ -7,112 +10,95 @@ import me.alpha432.oyvey.features.setting.Setting;
 import me.alpha432.oyvey.util.TextUtil;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-public class Managers extends Module {
-  private static Managers INSTANCE = new Managers();
-  
-  public Setting<Boolean> betterFrames = register(new Setting("BetterMaxFPS", Boolean.valueOf(false)));
-  
-  public Setting<String> commandBracket = register(new Setting("Bracket", "<"));
-  
-  public Setting<String> commandBracket2 = register(new Setting("Bracket2", ">"));
-  
-  public Setting<String> command = register(new Setting("Command", "Phobos.eu"));
-  
-  public Setting<Boolean> rainbowPrefix = register(new Setting("RainbowPrefix", Boolean.valueOf(false)));
-  
-  public Setting<TextUtil.Color> bracketColor = register(new Setting("BColor", TextUtil.Color.BLUE));
-  
-  public Setting<TextUtil.Color> commandColor = register(new Setting("CColor", TextUtil.Color.BLUE));
-  
-  public Setting<Integer> betterFPS = register(new Setting("MaxFPS", Integer.valueOf(300), Integer.valueOf(30), Integer.valueOf(1000), v -> ((Boolean)this.betterFrames.getValue()).booleanValue()));
-  
-  public Setting<Boolean> potions = register(new Setting("Potions", Boolean.valueOf(true)));
-  
-  public Setting<Integer> textRadarUpdates = register(new Setting("TRUpdates", Integer.valueOf(500), Integer.valueOf(0), Integer.valueOf(1000)));
-  
-  public Setting<Integer> respondTime = register(new Setting("SeverTime", Integer.valueOf(500), Integer.valueOf(0), Integer.valueOf(1000)));
-  
-  public Setting<Integer> moduleListUpdates = register(new Setting("ALUpdates", Integer.valueOf(1000), Integer.valueOf(0), Integer.valueOf(1000)));
-  
-  public Setting<Float> holeRange = register(new Setting("HoleRange", Float.valueOf(6.0F), Float.valueOf(1.0F), Float.valueOf(256.0F)));
-  
-  public Setting<Integer> holeUpdates = register(new Setting("HoleUpdates", Integer.valueOf(100), Integer.valueOf(0), Integer.valueOf(1000)));
-  
-  public Setting<Integer> holeSync = register(new Setting("HoleSync", Integer.valueOf(10000), Integer.valueOf(1), Integer.valueOf(10000)));
-  
-  public Setting<Boolean> safety = register(new Setting("SafetyPlayer", Boolean.valueOf(false)));
-  
-  public Setting<Integer> safetyCheck = register(new Setting("SafetyCheck", Integer.valueOf(50), Integer.valueOf(1), Integer.valueOf(150)));
-  
-  public Setting<Integer> safetySync = register(new Setting("SafetySync", Integer.valueOf(250), Integer.valueOf(1), Integer.valueOf(10000)));
-  
-  public Setting<ThreadMode> holeThread = register(new Setting("HoleThread", ThreadMode.WHILE));
-  
-  public Setting<Boolean> speed = register(new Setting("Speed", Boolean.valueOf(true)));
-  
-  public Setting<Boolean> oneDot15 = register(new Setting("1.15", Boolean.valueOf(false)));
-  
-  public Setting<Boolean> tRadarInv = register(new Setting("TRadarInv", Boolean.valueOf(true)));
-  
-  public Setting<Boolean> unfocusedCpu = register(new Setting("UnfocusedCPU", Boolean.valueOf(false)));
-  
-  public Setting<Integer> cpuFPS = register(new Setting("UnfocusedFPS", Integer.valueOf(60), Integer.valueOf(1), Integer.valueOf(60), v -> ((Boolean)this.unfocusedCpu.getValue()).booleanValue()));
-  
-  public Setting<Integer> baritoneTimeOut = register(new Setting("Baritone", Integer.valueOf(5), Integer.valueOf(1), Integer.valueOf(20)));
-  
-  public Setting<Boolean> oneChunk = register(new Setting("OneChunk", Boolean.valueOf(false)));
-  
-  public Managers() {
-    super("Management", "ClientManagement", Module.Category.CLIENT, false, false, true);
-    setInstance();
-  }
-  
-  public static Managers getInstance() {
-    if (INSTANCE == null)
-      INSTANCE = new Managers(); 
-    return INSTANCE;
-  }
-  
-  private void setInstance() {
-    INSTANCE = this;
-  }
-  
-  public void onLoad() {
-    OyVey.commandManager.setClientMessage(getCommandMessage());
-  }
-  
-  @SubscribeEvent
-  public void onSettingChange(ClientEvent event) {
-    if (event.getStage() == 2) {
-      if (((Boolean)this.oneChunk.getPlannedValue()).booleanValue())
-        mc.gameSettings.renderDistanceChunks = 1; 
-      if (event.getSetting() != null && equals(event.getSetting().getFeature()))
-        OyVey.commandManager.setClientMessage(getCommandMessage()); 
-    } 
-  }
-  
-  public String getCommandMessage() {
-    if (((Boolean)this.rainbowPrefix.getPlannedValue()).booleanValue()) {
-      StringBuilder stringBuilder = new StringBuilder(getRawCommandMessage());
-      stringBuilder.insert(0, "§+");
-      stringBuilder.append("§r");
-      return stringBuilder.toString();
-    } 
-    return TextUtil.coloredString((String)this.commandBracket.getPlannedValue(), (TextUtil.Color)this.bracketColor.getPlannedValue()) + TextUtil.coloredString((String)this.command.getPlannedValue(), (TextUtil.Color)this.commandColor.getPlannedValue()) + TextUtil.coloredString((String)this.commandBracket2.getPlannedValue(), (TextUtil.Color)this.bracketColor.getPlannedValue());
-  }
-  
-  public String getRainbowCommandMessage() {
-    StringBuilder stringBuilder = new StringBuilder(getRawCommandMessage());
-    stringBuilder.insert(0, "§+");
-    stringBuilder.append("§r");
-    return stringBuilder.toString();
-  }
-  
-  public String getRawCommandMessage() {
-    return (String)this.commandBracket.getValue() + (String)this.command.getValue() + (String)this.commandBracket2.getValue();
-  }
-  
-  public enum ThreadMode {
-    POOL, WHILE, NONE;
-  }
+public class Managers
+extends Module {
+    private static Managers INSTANCE = new Managers();
+    public Setting<Boolean> betterFrames = this.register(new Setting<Boolean>("BetterMaxFPS", false));
+    public Setting<String> commandBracket = this.register(new Setting<String>("Bracket", "<"));
+    public Setting<String> commandBracket2 = this.register(new Setting<String>("Bracket2", ">"));
+    public Setting<String> command = this.register(new Setting<String>("Command", "Phobos.eu"));
+    public Setting<Boolean> rainbowPrefix = this.register(new Setting<Boolean>("RainbowPrefix", false));
+    public Setting<TextUtil.Color> bracketColor = this.register(new Setting<TextUtil.Color>("BColor", TextUtil.Color.BLUE));
+    public Setting<TextUtil.Color> commandColor = this.register(new Setting<TextUtil.Color>("CColor", TextUtil.Color.BLUE));
+    public Setting<Integer> betterFPS = this.register(new Setting<Object>("MaxFPS", Integer.valueOf(300), Integer.valueOf(30), Integer.valueOf(1000), v -> this.betterFrames.getValue()));
+    public Setting<Boolean> potions = this.register(new Setting<Boolean>("Potions", true));
+    public Setting<Integer> textRadarUpdates = this.register(new Setting<Integer>("TRUpdates", 500, 0, 1000));
+    public Setting<Integer> respondTime = this.register(new Setting<Integer>("SeverTime", 500, 0, 1000));
+    public Setting<Integer> moduleListUpdates = this.register(new Setting<Integer>("ALUpdates", 1000, 0, 1000));
+    public Setting<Float> holeRange = this.register(new Setting<Float>("HoleRange", Float.valueOf(6.0f), Float.valueOf(1.0f), Float.valueOf(256.0f)));
+    public Setting<Integer> holeUpdates = this.register(new Setting<Integer>("HoleUpdates", 100, 0, 1000));
+    public Setting<Integer> holeSync = this.register(new Setting<Integer>("HoleSync", 10000, 1, 10000));
+    public Setting<Boolean> safety = this.register(new Setting<Boolean>("SafetyPlayer", false));
+    public Setting<Integer> safetyCheck = this.register(new Setting<Integer>("SafetyCheck", 50, 1, 150));
+    public Setting<Integer> safetySync = this.register(new Setting<Integer>("SafetySync", 250, 1, 10000));
+    public Setting<ThreadMode> holeThread = this.register(new Setting<ThreadMode>("HoleThread", ThreadMode.WHILE));
+    public Setting<Boolean> speed = this.register(new Setting<Boolean>("Speed", true));
+    public Setting<Boolean> oneDot15 = this.register(new Setting<Boolean>("1.15", false));
+    public Setting<Boolean> tRadarInv = this.register(new Setting<Boolean>("TRadarInv", true));
+    public Setting<Boolean> unfocusedCpu = this.register(new Setting<Boolean>("UnfocusedCPU", false));
+    public Setting<Integer> cpuFPS = this.register(new Setting<Object>("UnfocusedFPS", Integer.valueOf(60), Integer.valueOf(1), Integer.valueOf(60), v -> this.unfocusedCpu.getValue()));
+    public Setting<Integer> baritoneTimeOut = this.register(new Setting<Integer>("Baritone", 5, 1, 20));
+    public Setting<Boolean> oneChunk = this.register(new Setting<Boolean>("OneChunk", false));
+
+    public Managers() {
+        super("Management", "ClientManagement", Module.Category.CLIENT, false, false, true);
+        this.setInstance();
+    }
+
+    public static Managers getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new Managers();
+        }
+        return INSTANCE;
+    }
+
+    private void setInstance() {
+        INSTANCE = this;
+    }
+
+    @Override
+    public void onLoad() {
+        OyVey.commandManager.setClientMessage(this.getCommandMessage());
+    }
+
+    @SubscribeEvent
+    public void onSettingChange(ClientEvent event) {
+        if (event.getStage() == 2) {
+            if (this.oneChunk.getPlannedValue().booleanValue()) {
+                Managers.mc.gameSettings.renderDistanceChunks = 1;
+            }
+            if (event.getSetting() != null && this.equals(event.getSetting().getFeature())) {
+                OyVey.commandManager.setClientMessage(this.getCommandMessage());
+            }
+        }
+    }
+
+    public String getCommandMessage() {
+        if (this.rainbowPrefix.getPlannedValue().booleanValue()) {
+            StringBuilder stringBuilder = new StringBuilder(this.getRawCommandMessage());
+            stringBuilder.insert(0, "\u00a7+");
+            stringBuilder.append("\u00a7r");
+            return stringBuilder.toString();
+        }
+        return TextUtil.coloredString(this.commandBracket.getPlannedValue(), this.bracketColor.getPlannedValue()) + TextUtil.coloredString(this.command.getPlannedValue(), this.commandColor.getPlannedValue()) + TextUtil.coloredString(this.commandBracket2.getPlannedValue(), this.bracketColor.getPlannedValue());
+    }
+
+    public String getRainbowCommandMessage() {
+        StringBuilder stringBuilder = new StringBuilder(this.getRawCommandMessage());
+        stringBuilder.insert(0, "\u00a7+");
+        stringBuilder.append("\u00a7r");
+        return stringBuilder.toString();
+    }
+
+    public String getRawCommandMessage() {
+        return this.commandBracket.getValue() + this.command.getValue() + this.commandBracket2.getValue();
+    }
+
+    public static enum ThreadMode {
+        POOL,
+        WHILE,
+        NONE;
+
+    }
 }
+

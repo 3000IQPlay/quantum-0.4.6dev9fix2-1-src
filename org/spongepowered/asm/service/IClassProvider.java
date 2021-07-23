@@ -1,13 +1,17 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.service;
 
 import java.net.URL;
 
 public interface IClassProvider {
-  URL[] getClassPath();
-  
-  Class<?> findClass(String paramString) throws ClassNotFoundException;
-  
-  Class<?> findClass(String paramString, boolean paramBoolean) throws ClassNotFoundException;
-  
-  Class<?> findAgentClass(String paramString, boolean paramBoolean) throws ClassNotFoundException;
+    public URL[] getClassPath();
+
+    public Class<?> findClass(String var1) throws ClassNotFoundException;
+
+    public Class<?> findClass(String var1, boolean var2) throws ClassNotFoundException;
+
+    public Class<?> findAgentClass(String var1, boolean var2) throws ClassNotFoundException;
 }
+

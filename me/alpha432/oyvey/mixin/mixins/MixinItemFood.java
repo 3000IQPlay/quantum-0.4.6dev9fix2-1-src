@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.mixin.mixins;
 
 import me.alpha432.oyvey.features.modules.combat.Offhand;
@@ -10,10 +13,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin({ItemFood.class})
+@Mixin(value={ItemFood.class})
 public class MixinItemFood {
-  @Inject(method = {"onItemUseFinish"}, at = {@At("RETURN")}, cancellable = true)
-  public void onItemUseFinishHook(ItemStack stack, World worldIn, EntityLivingBase entityLiving, CallbackInfoReturnable<ItemStack> info) {
-    Offhand.getInstance().onItemFinish(stack, entityLiving);
-  }
+    @Inject(method={"onItemUseFinish"}, at={@At(value="RETURN")}, cancellable=true)
+    public void onItemUseFinishHook(ItemStack stack, World worldIn, EntityLivingBase entityLiving, CallbackInfoReturnable<ItemStack> info) {
+        Offhand.getInstance().onItemFinish(stack, entityLiving);
+    }
 }
+

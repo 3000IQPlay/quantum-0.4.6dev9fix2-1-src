@@ -1,23 +1,28 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.json.simple.parser;
 
 import java.io.IOException;
+import org.json.simple.parser.ParseException;
 
 public interface ContentHandler {
-  void startJSON() throws ParseException, IOException;
-  
-  void endJSON() throws ParseException, IOException;
-  
-  boolean startObject() throws ParseException, IOException;
-  
-  boolean endObject() throws ParseException, IOException;
-  
-  boolean startObjectEntry(String paramString) throws ParseException, IOException;
-  
-  boolean endObjectEntry() throws ParseException, IOException;
-  
-  boolean startArray() throws ParseException, IOException;
-  
-  boolean endArray() throws ParseException, IOException;
-  
-  boolean primitive(Object paramObject) throws ParseException, IOException;
+    public void startJSON() throws ParseException, IOException;
+
+    public void endJSON() throws ParseException, IOException;
+
+    public boolean startObject() throws ParseException, IOException;
+
+    public boolean endObject() throws ParseException, IOException;
+
+    public boolean startObjectEntry(String var1) throws ParseException, IOException;
+
+    public boolean endObjectEntry() throws ParseException, IOException;
+
+    public boolean startArray() throws ParseException, IOException;
+
+    public boolean endArray() throws ParseException, IOException;
+
+    public boolean primitive(Object var1) throws ParseException, IOException;
 }
+

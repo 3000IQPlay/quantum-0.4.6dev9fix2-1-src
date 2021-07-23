@@ -1,14 +1,18 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.event.events;
 
 import me.alpha432.oyvey.event.EventStage;
 
-public class PlayerJumpEvent extends EventStage {
-  public double motionX;
-  
-  public double motionY;
-  
-  public PlayerJumpEvent(double motionX, double motionY) {
-    this.motionX = motionX;
-    this.motionY = motionY;
-  }
+public class PlayerJumpEvent
+extends EventStage {
+    public double motionX;
+    public double motionY;
+
+    public PlayerJumpEvent(double motionX, double motionY) {
+        this.motionX = motionX;
+        this.motionY = motionY;
+    }
 }
+

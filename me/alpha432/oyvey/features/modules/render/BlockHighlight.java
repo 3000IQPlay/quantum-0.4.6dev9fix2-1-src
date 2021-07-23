@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.features.modules.render;
 
 import java.awt.Color;
@@ -9,30 +12,27 @@ import me.alpha432.oyvey.util.RenderUtil;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 
-public class BlockHighlight extends Module {
-  private final Setting<Float> lineWidth = register(new Setting("LineWidth", Float.valueOf(1.0F), Float.valueOf(0.1F), Float.valueOf(5.0F)));
-  
-  private final Setting<Integer> alpha = register(new Setting("Alpha", Integer.valueOf(255), Integer.valueOf(0), Integer.valueOf(255)));
-  
-  private final Setting<Integer> red = register(new Setting("Red", Integer.valueOf(255), Integer.valueOf(0), Integer.valueOf(255)));
-  
-  private final Setting<Integer> green = register(new Setting("Green", Integer.valueOf(255), Integer.valueOf(0), Integer.valueOf(255)));
-  
-  private final Setting<Integer> blue = register(new Setting("Blue", Integer.valueOf(255), Integer.valueOf(0), Integer.valueOf(255)));
-  
-  private final Setting<Boolean> rainbow = register(new Setting("Rainbow", Boolean.valueOf(false)));
-  
-  private final Setting<Integer> rainbowhue = register(new Setting("RainbowHue", Integer.valueOf(255), Integer.valueOf(0), Integer.valueOf(255), v -> ((Boolean)this.rainbow.getValue()).booleanValue()));
-  
-  public BlockHighlight() {
-    super("BlockHighlight", "bh", Module.Category.RENDER, false, false, false);
-  }
-  
-  public void onRender3D(Render3DEvent event) {
-    RayTraceResult ray = mc.objectMouseOver;
-    if (ray != null && ray.typeOfHit == RayTraceResult.Type.BLOCK) {
-      BlockPos blockpos = ray.getBlockPos();
-      RenderUtil.drawBlockOutline(blockpos, ((Boolean)this.rainbow.getValue()).booleanValue() ? ColorUtil.rainbow(((Integer)this.rainbowhue.getValue()).intValue()) : new Color(((Integer)this.red.getValue()).intValue(), ((Integer)this.green.getValue()).intValue(), ((Integer)this.blue.getValue()).intValue(), ((Integer)this.alpha.getValue()).intValue()), ((Float)this.lineWidth.getValue()).floatValue(), false);
-    } 
-  }
+public class BlockHighlight
+extends Module {
+    private final Setting<Float> lineWidth = this.register(new Setting<Float>("LineWidth", Float.valueOf(1.0f), Float.valueOf(0.1f), Float.valueOf(5.0f)));
+    private final Setting<Integer> alpha = this.register(new Setting<Integer>("Alpha", 255, 0, 255));
+    private final Setting<Integer> red = this.register(new Setting<Integer>("Red", 255, 0, 255));
+    private final Setting<Integer> green = this.register(new Setting<Integer>("Green", 255, 0, 255));
+    private final Setting<Integer> blue = this.register(new Setting<Integer>("Blue", 255, 0, 255));
+    private final Setting<Boolean> rainbow = this.register(new Setting<Boolean>("Rainbow", false));
+    private final Setting<Integer> rainbowhue = this.register(new Setting<Integer>("RainbowHue", Integer.valueOf(255), Integer.valueOf(0), Integer.valueOf(255), v -> this.rainbow.getValue()));
+
+    public BlockHighlight() {
+        super("BlockHighlight", "bh", Module.Category.RENDER, false, false, false);
+    }
+
+    @Override
+    public void onRender3D(Render3DEvent event) {
+        RayTraceResult ray = BlockHighlight.mc.objectMouseOver;
+        if (ray != null && ray.typeOfHit == RayTraceResult.Type.BLOCK) {
+            BlockPos blockpos = ray.getBlockPos();
+            RenderUtil.drawBlockOutline(blockpos, this.rainbow.getValue() != false ? ColorUtil.rainbow(this.rainbowhue.getValue()) : new Color(this.red.getValue(), this.green.getValue(), this.blue.getValue(), this.alpha.getValue()), this.lineWidth.getValue().floatValue(), false);
+        }
+    }
 }
+

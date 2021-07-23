@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.features.modules.player;
 
 import me.alpha432.oyvey.OyVey;
@@ -5,74 +8,72 @@ import me.alpha432.oyvey.features.modules.Module;
 import me.alpha432.oyvey.features.setting.Setting;
 import me.alpha432.oyvey.util.Timer;
 
-public class TimerSpeed extends Module {
-  public Setting<Boolean> autoOff = register(new Setting("AutoOff", Boolean.valueOf(false)));
-  
-  public Setting<Integer> timeLimit = register(new Setting("Limit", Integer.valueOf(250), Integer.valueOf(1), Integer.valueOf(2500), v -> ((Boolean)this.autoOff.getValue()).booleanValue()));
-  
-  public Setting<TimerMode> mode = register(new Setting("Mode", TimerMode.NORMAL));
-  
-  public Setting<Float> timerSpeed = register(new Setting("Speed", Float.valueOf(4.0F), Float.valueOf(0.1F), Float.valueOf(20.0F)));
-  
-  public Setting<Float> fastSpeed = register(new Setting("Fast", Float.valueOf(10.0F), Float.valueOf(0.1F), Float.valueOf(100.0F), v -> (this.mode.getValue() == TimerMode.SWITCH), "Fast Speed for switch."));
-  
-  public Setting<Integer> fastTime = register(new Setting("FastTime", Integer.valueOf(20), Integer.valueOf(1), Integer.valueOf(500), v -> (this.mode.getValue() == TimerMode.SWITCH), "How long you want to go fast.(ms * 10)"));
-  
-  public Setting<Integer> slowTime = register(new Setting("SlowTime", Integer.valueOf(20), Integer.valueOf(1), Integer.valueOf(500), v -> (this.mode.getValue() == TimerMode.SWITCH), "Recover from too fast.(ms * 10)"));
-  
-  public Setting<Boolean> startFast = register(new Setting("StartFast", Boolean.valueOf(false), v -> (this.mode.getValue() == TimerMode.SWITCH)));
-  
-  public float speed = 1.0F;
-  
-  private final Timer timer = new Timer();
-  
-  private final Timer turnOffTimer = new Timer();
-  
-  private boolean fast = false;
-  
-  public TimerSpeed() {
-    super("Timer", "Will speed up the game.", Module.Category.PLAYER, false, false, false);
-  }
-  
-  public void onEnable() {
-    this.turnOffTimer.reset();
-    this.speed = ((Float)this.timerSpeed.getValue()).floatValue();
-    if (!((Boolean)this.startFast.getValue()).booleanValue())
-      this.timer.reset(); 
-  }
-  
-  public void onUpdate() {
-    if (((Boolean)this.autoOff.getValue()).booleanValue() && this.turnOffTimer.passedMs(((Integer)this.timeLimit.getValue()).intValue())) {
-      disable();
-      return;
-    } 
-    if (this.mode.getValue() == TimerMode.NORMAL) {
-      this.speed = ((Float)this.timerSpeed.getValue()).floatValue();
-      return;
-    } 
-    if (!this.fast && this.timer.passedDms(((Integer)this.slowTime.getValue()).intValue())) {
-      this.fast = true;
-      this.speed = ((Float)this.fastSpeed.getValue()).floatValue();
-      this.timer.reset();
-    } 
-    if (this.fast && this.timer.passedDms(((Integer)this.fastTime.getValue()).intValue())) {
-      this.fast = false;
-      this.speed = ((Float)this.timerSpeed.getValue()).floatValue();
-      this.timer.reset();
-    } 
-  }
-  
-  public void onDisable() {
-    this.speed = 1.0F;
-    OyVey.timerManager.reset();
-    this.fast = false;
-  }
-  
-  public String getDisplayInfo() {
-    return this.timerSpeed.getValueAsString();
-  }
-  
-  public enum TimerMode {
-    NORMAL, SWITCH;
-  }
+public class TimerSpeed
+extends Module {
+    public Setting<Boolean> autoOff = this.register(new Setting<Boolean>("AutoOff", false));
+    public Setting<Integer> timeLimit = this.register(new Setting<Object>("Limit", Integer.valueOf(250), Integer.valueOf(1), Integer.valueOf(2500), v -> this.autoOff.getValue()));
+    public Setting<TimerMode> mode = this.register(new Setting<TimerMode>("Mode", TimerMode.NORMAL));
+    public Setting<Float> timerSpeed = this.register(new Setting<Float>("Speed", Float.valueOf(4.0f), Float.valueOf(0.1f), Float.valueOf(20.0f)));
+    public Setting<Float> fastSpeed = this.register(new Setting<Object>("Fast", Float.valueOf(10.0f), Float.valueOf(0.1f), Float.valueOf(100.0f), v -> this.mode.getValue() == TimerMode.SWITCH, "Fast Speed for switch."));
+    public Setting<Integer> fastTime = this.register(new Setting<Object>("FastTime", 20, 1, 500, v -> this.mode.getValue() == TimerMode.SWITCH, "How long you want to go fast.(ms * 10)"));
+    public Setting<Integer> slowTime = this.register(new Setting<Object>("SlowTime", 20, 1, 500, v -> this.mode.getValue() == TimerMode.SWITCH, "Recover from too fast.(ms * 10)"));
+    public Setting<Boolean> startFast = this.register(new Setting<Object>("StartFast", Boolean.valueOf(false), v -> this.mode.getValue() == TimerMode.SWITCH));
+    public float speed = 1.0f;
+    private final Timer timer = new Timer();
+    private final Timer turnOffTimer = new Timer();
+    private boolean fast = false;
+
+    public TimerSpeed() {
+        super("Timer", "Will speed up the game.", Module.Category.PLAYER, false, false, false);
+    }
+
+    @Override
+    public void onEnable() {
+        this.turnOffTimer.reset();
+        this.speed = this.timerSpeed.getValue().floatValue();
+        if (!this.startFast.getValue().booleanValue()) {
+            this.timer.reset();
+        }
+    }
+
+    @Override
+    public void onUpdate() {
+        if (this.autoOff.getValue().booleanValue() && this.turnOffTimer.passedMs(this.timeLimit.getValue().intValue())) {
+            this.disable();
+            return;
+        }
+        if (this.mode.getValue() == TimerMode.NORMAL) {
+            this.speed = this.timerSpeed.getValue().floatValue();
+            return;
+        }
+        if (!this.fast && this.timer.passedDms(this.slowTime.getValue().intValue())) {
+            this.fast = true;
+            this.speed = this.fastSpeed.getValue().floatValue();
+            this.timer.reset();
+        }
+        if (this.fast && this.timer.passedDms(this.fastTime.getValue().intValue())) {
+            this.fast = false;
+            this.speed = this.timerSpeed.getValue().floatValue();
+            this.timer.reset();
+        }
+    }
+
+    @Override
+    public void onDisable() {
+        this.speed = 1.0f;
+        OyVey.timerManager.reset();
+        this.fast = false;
+    }
+
+    @Override
+    public String getDisplayInfo() {
+        return this.timerSpeed.getValueAsString();
+    }
+
+    public static enum TimerMode {
+        NORMAL,
+        SWITCH;
+
+    }
 }
+

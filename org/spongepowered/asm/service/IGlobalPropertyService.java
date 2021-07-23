@@ -1,11 +1,15 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.service;
 
 public interface IGlobalPropertyService {
-  <T> T getProperty(String paramString);
-  
-  void setProperty(String paramString, Object paramObject);
-  
-  <T> T getProperty(String paramString, T paramT);
-  
-  String getPropertyString(String paramString1, String paramString2);
+    public <T> T getProperty(String var1);
+
+    public void setProperty(String var1, Object var2);
+
+    public <T> T getProperty(String var1, T var2);
+
+    public String getPropertyString(String var1, String var2);
 }
+

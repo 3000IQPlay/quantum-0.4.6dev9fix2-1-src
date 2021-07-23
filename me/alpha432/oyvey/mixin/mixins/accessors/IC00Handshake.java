@@ -1,14 +1,18 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.mixin.mixins.accessors;
 
 import net.minecraft.network.handshake.client.C00Handshake;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin({C00Handshake.class})
+@Mixin(value={C00Handshake.class})
 public interface IC00Handshake {
-  @Accessor("ip")
-  String getIp();
-  
-  @Accessor("ip")
-  void setIp(String paramString);
+    @Accessor(value="ip")
+    public String getIp();
+
+    @Accessor(value="ip")
+    public void setIp(String var1);
 }
+

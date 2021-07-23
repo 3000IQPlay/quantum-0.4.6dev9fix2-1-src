@@ -1,9 +1,16 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.service;
 
-public interface ILegacyClassTransformer extends ITransformer {
-  String getName();
-  
-  boolean isDelegationExcluded();
-  
-  byte[] transformClassBytes(String paramString1, String paramString2, byte[] paramArrayOfbyte);
+import org.spongepowered.asm.service.ITransformer;
+
+public interface ILegacyClassTransformer
+extends ITransformer {
+    public String getName();
+
+    public boolean isDelegationExcluded();
+
+    public byte[] transformClassBytes(String var1, String var2, byte[] var3);
 }
+

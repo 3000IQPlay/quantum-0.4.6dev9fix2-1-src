@@ -1,7 +1,11 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.mixin.transformer.ext;
 
 public interface IHotSwap {
-  void registerMixinClass(String paramString);
-  
-  void registerTargetClass(String paramString, byte[] paramArrayOfbyte);
+    public void registerMixinClass(String var1);
+
+    public void registerTargetClass(String var1, byte[] var2);
 }
+

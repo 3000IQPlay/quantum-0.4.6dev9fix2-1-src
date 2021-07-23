@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.tools.obfuscation;
 
 import java.util.Set;
@@ -14,109 +17,115 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
+import org.spongepowered.tools.obfuscation.MixinObfuscationProcessor;
 import org.spongepowered.tools.obfuscation.mirror.AnnotationHandle;
 import org.spongepowered.tools.obfuscation.mirror.TypeUtils;
 
-@SupportedAnnotationTypes({"org.spongepowered.asm.mixin.Mixin", "org.spongepowered.asm.mixin.Shadow", "org.spongepowered.asm.mixin.Overwrite", "org.spongepowered.asm.mixin.gen.Accessor", "org.spongepowered.asm.mixin.Implements"})
-public class MixinObfuscationProcessorTargets extends MixinObfuscationProcessor {
-  public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-    if (roundEnv.processingOver()) {
-      postProcess(roundEnv);
-      return true;
-    } 
-    processMixins(roundEnv);
-    processShadows(roundEnv);
-    processOverwrites(roundEnv);
-    processAccessors(roundEnv);
-    processInvokers(roundEnv);
-    processImplements(roundEnv);
-    postProcess(roundEnv);
-    return true;
-  }
-  
-  protected void postProcess(RoundEnvironment roundEnv) {
-    super.postProcess(roundEnv);
-    try {
-      this.mixins.writeReferences();
-      this.mixins.writeMappings();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-    } 
-  }
-  
-  private void processShadows(RoundEnvironment roundEnv) {
-    for (Element elem : roundEnv.getElementsAnnotatedWith((Class)Shadow.class)) {
-      Element parent = elem.getEnclosingElement();
-      if (!(parent instanceof TypeElement)) {
-        this.mixins.printMessage(Diagnostic.Kind.ERROR, "Unexpected parent with type " + TypeUtils.getElementType(parent), elem);
-        continue;
-      } 
-      AnnotationHandle shadow = AnnotationHandle.of(elem, Shadow.class);
-      if (elem.getKind() == ElementKind.FIELD) {
-        this.mixins.registerShadow((TypeElement)parent, (VariableElement)elem, shadow);
-        continue;
-      } 
-      if (elem.getKind() == ElementKind.METHOD) {
-        this.mixins.registerShadow((TypeElement)parent, (ExecutableElement)elem, shadow);
-        continue;
-      } 
-      this.mixins.printMessage(Diagnostic.Kind.ERROR, "Element is not a method or field", elem);
-    } 
-  }
-  
-  private void processOverwrites(RoundEnvironment roundEnv) {
-    for (Element elem : roundEnv.getElementsAnnotatedWith((Class)Overwrite.class)) {
-      Element parent = elem.getEnclosingElement();
-      if (!(parent instanceof TypeElement)) {
-        this.mixins.printMessage(Diagnostic.Kind.ERROR, "Unexpected parent with type " + TypeUtils.getElementType(parent), elem);
-        continue;
-      } 
-      if (elem.getKind() == ElementKind.METHOD) {
-        this.mixins.registerOverwrite((TypeElement)parent, (ExecutableElement)elem);
-        continue;
-      } 
-      this.mixins.printMessage(Diagnostic.Kind.ERROR, "Element is not a method", elem);
-    } 
-  }
-  
-  private void processAccessors(RoundEnvironment roundEnv) {
-    for (Element elem : roundEnv.getElementsAnnotatedWith((Class)Accessor.class)) {
-      Element parent = elem.getEnclosingElement();
-      if (!(parent instanceof TypeElement)) {
-        this.mixins.printMessage(Diagnostic.Kind.ERROR, "Unexpected parent with type " + TypeUtils.getElementType(parent), elem);
-        continue;
-      } 
-      if (elem.getKind() == ElementKind.METHOD) {
-        this.mixins.registerAccessor((TypeElement)parent, (ExecutableElement)elem);
-        continue;
-      } 
-      this.mixins.printMessage(Diagnostic.Kind.ERROR, "Element is not a method", elem);
-    } 
-  }
-  
-  private void processInvokers(RoundEnvironment roundEnv) {
-    for (Element elem : roundEnv.getElementsAnnotatedWith((Class)Invoker.class)) {
-      Element parent = elem.getEnclosingElement();
-      if (!(parent instanceof TypeElement)) {
-        this.mixins.printMessage(Diagnostic.Kind.ERROR, "Unexpected parent with type " + TypeUtils.getElementType(parent), elem);
-        continue;
-      } 
-      if (elem.getKind() == ElementKind.METHOD) {
-        this.mixins.registerInvoker((TypeElement)parent, (ExecutableElement)elem);
-        continue;
-      } 
-      this.mixins.printMessage(Diagnostic.Kind.ERROR, "Element is not a method", elem);
-    } 
-  }
-  
-  private void processImplements(RoundEnvironment roundEnv) {
-    for (Element elem : roundEnv.getElementsAnnotatedWith((Class)Implements.class)) {
-      if (elem.getKind() == ElementKind.CLASS || elem.getKind() == ElementKind.INTERFACE) {
-        AnnotationHandle implementsAnnotation = AnnotationHandle.of(elem, Implements.class);
-        this.mixins.registerSoftImplements((TypeElement)elem, implementsAnnotation);
-        continue;
-      } 
-      this.mixins.printMessage(Diagnostic.Kind.ERROR, "Found an @Implements annotation on an element which is not a class or interface", elem);
-    } 
-  }
+@SupportedAnnotationTypes(value={"org.spongepowered.asm.mixin.Mixin", "org.spongepowered.asm.mixin.Shadow", "org.spongepowered.asm.mixin.Overwrite", "org.spongepowered.asm.mixin.gen.Accessor", "org.spongepowered.asm.mixin.Implements"})
+public class MixinObfuscationProcessorTargets
+extends MixinObfuscationProcessor {
+    @Override
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        if (roundEnv.processingOver()) {
+            this.postProcess(roundEnv);
+            return true;
+        }
+        this.processMixins(roundEnv);
+        this.processShadows(roundEnv);
+        this.processOverwrites(roundEnv);
+        this.processAccessors(roundEnv);
+        this.processInvokers(roundEnv);
+        this.processImplements(roundEnv);
+        this.postProcess(roundEnv);
+        return true;
+    }
+
+    @Override
+    protected void postProcess(RoundEnvironment roundEnv) {
+        super.postProcess(roundEnv);
+        try {
+            this.mixins.writeReferences();
+            this.mixins.writeMappings();
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void processShadows(RoundEnvironment roundEnv) {
+        for (Element element : roundEnv.getElementsAnnotatedWith(Shadow.class)) {
+            Element parent = element.getEnclosingElement();
+            if (!(parent instanceof TypeElement)) {
+                this.mixins.printMessage(Diagnostic.Kind.ERROR, "Unexpected parent with type " + TypeUtils.getElementType(parent), element);
+                continue;
+            }
+            AnnotationHandle shadow = AnnotationHandle.of(element, Shadow.class);
+            if (element.getKind() == ElementKind.FIELD) {
+                this.mixins.registerShadow((TypeElement)parent, (VariableElement)element, shadow);
+                continue;
+            }
+            if (element.getKind() == ElementKind.METHOD) {
+                this.mixins.registerShadow((TypeElement)parent, (ExecutableElement)element, shadow);
+                continue;
+            }
+            this.mixins.printMessage(Diagnostic.Kind.ERROR, "Element is not a method or field", element);
+        }
+    }
+
+    private void processOverwrites(RoundEnvironment roundEnv) {
+        for (Element element : roundEnv.getElementsAnnotatedWith(Overwrite.class)) {
+            Element parent = element.getEnclosingElement();
+            if (!(parent instanceof TypeElement)) {
+                this.mixins.printMessage(Diagnostic.Kind.ERROR, "Unexpected parent with type " + TypeUtils.getElementType(parent), element);
+                continue;
+            }
+            if (element.getKind() == ElementKind.METHOD) {
+                this.mixins.registerOverwrite((TypeElement)parent, (ExecutableElement)element);
+                continue;
+            }
+            this.mixins.printMessage(Diagnostic.Kind.ERROR, "Element is not a method", element);
+        }
+    }
+
+    private void processAccessors(RoundEnvironment roundEnv) {
+        for (Element element : roundEnv.getElementsAnnotatedWith(Accessor.class)) {
+            Element parent = element.getEnclosingElement();
+            if (!(parent instanceof TypeElement)) {
+                this.mixins.printMessage(Diagnostic.Kind.ERROR, "Unexpected parent with type " + TypeUtils.getElementType(parent), element);
+                continue;
+            }
+            if (element.getKind() == ElementKind.METHOD) {
+                this.mixins.registerAccessor((TypeElement)parent, (ExecutableElement)element);
+                continue;
+            }
+            this.mixins.printMessage(Diagnostic.Kind.ERROR, "Element is not a method", element);
+        }
+    }
+
+    private void processInvokers(RoundEnvironment roundEnv) {
+        for (Element element : roundEnv.getElementsAnnotatedWith(Invoker.class)) {
+            Element parent = element.getEnclosingElement();
+            if (!(parent instanceof TypeElement)) {
+                this.mixins.printMessage(Diagnostic.Kind.ERROR, "Unexpected parent with type " + TypeUtils.getElementType(parent), element);
+                continue;
+            }
+            if (element.getKind() == ElementKind.METHOD) {
+                this.mixins.registerInvoker((TypeElement)parent, (ExecutableElement)element);
+                continue;
+            }
+            this.mixins.printMessage(Diagnostic.Kind.ERROR, "Element is not a method", element);
+        }
+    }
+
+    private void processImplements(RoundEnvironment roundEnv) {
+        for (Element element : roundEnv.getElementsAnnotatedWith(Implements.class)) {
+            if (element.getKind() == ElementKind.CLASS || element.getKind() == ElementKind.INTERFACE) {
+                AnnotationHandle implementsAnnotation = AnnotationHandle.of(element, Implements.class);
+                this.mixins.registerSoftImplements((TypeElement)element, implementsAnnotation);
+                continue;
+            }
+            this.mixins.printMessage(Diagnostic.Kind.ERROR, "Found an @Implements annotation on an element which is not a class or interface", element);
+        }
+    }
 }
+

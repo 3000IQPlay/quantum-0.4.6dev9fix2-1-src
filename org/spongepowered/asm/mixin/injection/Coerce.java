@@ -1,7 +1,12 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.mixin.injection;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
-@Target({ElementType.PARAMETER})
-public @interface Coerce {}
+@Target(value={ElementType.PARAMETER})
+public @interface Coerce {
+}
+

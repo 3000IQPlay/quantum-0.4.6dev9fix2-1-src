@@ -1,17 +1,21 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.mixin.refmap;
 
 public interface IReferenceMapper {
-  boolean isDefault();
-  
-  String getResourceName();
-  
-  String getStatus();
-  
-  String getContext();
-  
-  void setContext(String paramString);
-  
-  String remap(String paramString1, String paramString2);
-  
-  String remapWithContext(String paramString1, String paramString2, String paramString3);
+    public boolean isDefault();
+
+    public String getResourceName();
+
+    public String getStatus();
+
+    public String getContext();
+
+    public void setContext(String var1);
+
+    public String remap(String var1, String var2);
+
+    public String remapWithContext(String var1, String var2, String var3);
 }
+

@@ -1,110 +1,143 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.mixin.injection.callback;
 
 import org.spongepowered.asm.lib.Type;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CancellationException;
 
-public class CallbackInfoReturnable<R> extends CallbackInfo {
-  private R returnValue;
-  
-  public CallbackInfoReturnable(String name, boolean cancellable) {
-    super(name, cancellable);
-    this.returnValue = null;
-  }
-  
-  public CallbackInfoReturnable(String name, boolean cancellable, R returnValue) {
-    super(name, cancellable);
-    this.returnValue = returnValue;
-  }
-  
-  public CallbackInfoReturnable(String name, boolean cancellable, byte returnValue) {
-    super(name, cancellable);
-    this.returnValue = (R)Byte.valueOf(returnValue);
-  }
-  
-  public CallbackInfoReturnable(String name, boolean cancellable, char returnValue) {
-    super(name, cancellable);
-    this.returnValue = (R)Character.valueOf(returnValue);
-  }
-  
-  public CallbackInfoReturnable(String name, boolean cancellable, double returnValue) {
-    super(name, cancellable);
-    this.returnValue = (R)Double.valueOf(returnValue);
-  }
-  
-  public CallbackInfoReturnable(String name, boolean cancellable, float returnValue) {
-    super(name, cancellable);
-    this.returnValue = (R)Float.valueOf(returnValue);
-  }
-  
-  public CallbackInfoReturnable(String name, boolean cancellable, int returnValue) {
-    super(name, cancellable);
-    this.returnValue = (R)Integer.valueOf(returnValue);
-  }
-  
-  public CallbackInfoReturnable(String name, boolean cancellable, long returnValue) {
-    super(name, cancellable);
-    this.returnValue = (R)Long.valueOf(returnValue);
-  }
-  
-  public CallbackInfoReturnable(String name, boolean cancellable, short returnValue) {
-    super(name, cancellable);
-    this.returnValue = (R)Short.valueOf(returnValue);
-  }
-  
-  public CallbackInfoReturnable(String name, boolean cancellable, boolean returnValue) {
-    super(name, cancellable);
-    this.returnValue = (R)Boolean.valueOf(returnValue);
-  }
-  
-  public void setReturnValue(R returnValue) throws CancellationException {
-    cancel();
-    this.returnValue = returnValue;
-  }
-  
-  public R getReturnValue() {
-    return this.returnValue;
-  }
-  
-  public byte getReturnValueB() {
-    return (this.returnValue == null) ? 0 : ((Byte)this.returnValue).byteValue();
-  }
-  
-  public char getReturnValueC() {
-    return (this.returnValue == null) ? Character.MIN_VALUE : ((Character)this.returnValue).charValue();
-  }
-  
-  public double getReturnValueD() {
-    return (this.returnValue == null) ? 0.0D : ((Double)this.returnValue).doubleValue();
-  }
-  
-  public float getReturnValueF() {
-    return (this.returnValue == null) ? 0.0F : ((Float)this.returnValue).floatValue();
-  }
-  
-  public int getReturnValueI() {
-    return (this.returnValue == null) ? 0 : ((Integer)this.returnValue).intValue();
-  }
-  
-  public long getReturnValueJ() {
-    return (this.returnValue == null) ? 0L : ((Long)this.returnValue).longValue();
-  }
-  
-  public short getReturnValueS() {
-    return (this.returnValue == null) ? 0 : ((Short)this.returnValue).shortValue();
-  }
-  
-  public boolean getReturnValueZ() {
-    return (this.returnValue == null) ? false : ((Boolean)this.returnValue).booleanValue();
-  }
-  
-  static String getReturnAccessor(Type returnType) {
-    if (returnType.getSort() == 10 || returnType.getSort() == 9)
-      return "getReturnValue"; 
-    return String.format("getReturnValue%s", new Object[] { returnType.getDescriptor() });
-  }
-  
-  static String getReturnDescriptor(Type returnType) {
-    if (returnType.getSort() == 10 || returnType.getSort() == 9)
-      return String.format("()%s", new Object[] { "Ljava/lang/Object;" }); 
-    return String.format("()%s", new Object[] { returnType.getDescriptor() });
-  }
+public class CallbackInfoReturnable<R>
+extends CallbackInfo {
+    private R returnValue;
+
+    public CallbackInfoReturnable(String name, boolean cancellable) {
+        super(name, cancellable);
+        this.returnValue = null;
+    }
+
+    public CallbackInfoReturnable(String name, boolean cancellable, R returnValue) {
+        super(name, cancellable);
+        this.returnValue = returnValue;
+    }
+
+    public CallbackInfoReturnable(String name, boolean cancellable, byte returnValue) {
+        super(name, cancellable);
+        this.returnValue = returnValue;
+    }
+
+    public CallbackInfoReturnable(String name, boolean cancellable, char returnValue) {
+        super(name, cancellable);
+        this.returnValue = Character.valueOf(returnValue);
+    }
+
+    public CallbackInfoReturnable(String name, boolean cancellable, double returnValue) {
+        super(name, cancellable);
+        this.returnValue = returnValue;
+    }
+
+    public CallbackInfoReturnable(String name, boolean cancellable, float returnValue) {
+        super(name, cancellable);
+        this.returnValue = Float.valueOf(returnValue);
+    }
+
+    public CallbackInfoReturnable(String name, boolean cancellable, int returnValue) {
+        super(name, cancellable);
+        this.returnValue = returnValue;
+    }
+
+    public CallbackInfoReturnable(String name, boolean cancellable, long returnValue) {
+        super(name, cancellable);
+        this.returnValue = returnValue;
+    }
+
+    public CallbackInfoReturnable(String name, boolean cancellable, short returnValue) {
+        super(name, cancellable);
+        this.returnValue = returnValue;
+    }
+
+    public CallbackInfoReturnable(String name, boolean cancellable, boolean returnValue) {
+        super(name, cancellable);
+        this.returnValue = returnValue;
+    }
+
+    public void setReturnValue(R returnValue) throws CancellationException {
+        super.cancel();
+        this.returnValue = returnValue;
+    }
+
+    public R getReturnValue() {
+        return this.returnValue;
+    }
+
+    public byte getReturnValueB() {
+        if (this.returnValue == null) {
+            return 0;
+        }
+        return (Byte)this.returnValue;
+    }
+
+    public char getReturnValueC() {
+        if (this.returnValue == null) {
+            return '\u0000';
+        }
+        return ((Character)this.returnValue).charValue();
+    }
+
+    public double getReturnValueD() {
+        if (this.returnValue == null) {
+            return 0.0;
+        }
+        return (Double)this.returnValue;
+    }
+
+    public float getReturnValueF() {
+        if (this.returnValue == null) {
+            return 0.0f;
+        }
+        return ((Float)this.returnValue).floatValue();
+    }
+
+    public int getReturnValueI() {
+        if (this.returnValue == null) {
+            return 0;
+        }
+        return (Integer)this.returnValue;
+    }
+
+    public long getReturnValueJ() {
+        if (this.returnValue == null) {
+            return 0L;
+        }
+        return (Long)this.returnValue;
+    }
+
+    public short getReturnValueS() {
+        if (this.returnValue == null) {
+            return 0;
+        }
+        return (Short)this.returnValue;
+    }
+
+    public boolean getReturnValueZ() {
+        if (this.returnValue == null) {
+            return false;
+        }
+        return (Boolean)this.returnValue;
+    }
+
+    static String getReturnAccessor(Type returnType) {
+        if (returnType.getSort() == 10 || returnType.getSort() == 9) {
+            return "getReturnValue";
+        }
+        return String.format("getReturnValue%s", returnType.getDescriptor());
+    }
+
+    static String getReturnDescriptor(Type returnType) {
+        if (returnType.getSort() == 10 || returnType.getSort() == 9) {
+            return String.format("()%s", "Ljava/lang/Object;");
+        }
+        return String.format("()%s", returnType.getDescriptor());
+    }
 }
+

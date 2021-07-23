@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.features.modules.misc;
 
 import me.alpha432.oyvey.event.events.PacketEvent;
@@ -7,6 +10,7 @@ import me.alpha432.oyvey.features.setting.Setting;
 import me.alpha432.oyvey.util.MathUtil;
 import me.alpha432.oyvey.util.Timer;
 import net.minecraft.client.gui.GuiDisconnected;
+import net.minecraft.client.gui.GuiGameOver;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.multiplayer.GuiConnecting;
 import net.minecraft.client.multiplayer.ServerData;
@@ -20,122 +24,122 @@ import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-public class Auto extends Module {
-  private static Auto INSTANCE = new Auto();
-  
-  public Setting<Mode> mode = register(new Setting("Mode", Mode.Reconnect));
-  
-  private final Setting<Boolean> logtrue = register(new Setting("Log", Boolean.valueOf(false), v -> (this.mode.getValue() == Mode.Log)));
-  
-  private final Setting<Float> health = register(new Setting("Health", Float.valueOf(16.0F), Float.valueOf(0.1F), Float.valueOf(36.0F), v -> (this.mode.getValue() == Mode.Log && ((Boolean)this.logtrue.getValue()).booleanValue())));
-  
-  private final Setting<Boolean> bed = register(new Setting("Beds", Boolean.valueOf(true), v -> (this.mode.getValue() == Mode.Log && ((Boolean)this.logtrue.getValue()).booleanValue())));
-  
-  private final Setting<Float> range = register(new Setting("BedRange", Float.valueOf(6.0F), Float.valueOf(0.1F), Float.valueOf(36.0F), v -> (this.mode.getValue() == Mode.Log && ((Boolean)this.logtrue.getValue()).booleanValue() && ((Boolean)this.bed.getValue()).booleanValue())));
-  
-  private final Setting<Boolean> logout = register(new Setting("LogoutOff", Boolean.valueOf(true), v -> (this.mode.getValue() == Mode.Log && ((Boolean)this.logtrue.getValue()).booleanValue())));
-  
-  private final Setting<Boolean> reconnecttrue = register(new Setting("Reconnect", Boolean.valueOf(false), v -> (this.mode.getValue() == Mode.Reconnect && !((Boolean)this.logtrue.getValue()).booleanValue())));
-  
-  private final Setting<Integer> delay = register(new Setting("Delay", Integer.valueOf(5), Integer.valueOf(1), Integer.valueOf(15), v -> (this.mode.getValue() == Mode.Reconnect && ((Boolean)this.reconnecttrue.getValue()).booleanValue())));
-  
-  private static ServerData serverData;
-  
-  private final Setting<Boolean> respawntrue = register(new Setting("Respawn", Boolean.valueOf(false), v -> (this.mode.getValue() == Mode.Respawn)));
-  
-  public Setting<Boolean> antiDeathScreen = register(new Setting("AntiDeathScreen", Boolean.valueOf(true), v -> (this.mode.getValue() == Mode.Respawn && ((Boolean)this.respawntrue.getValue()).booleanValue())));
-  
-  public Setting<Boolean> deathCoords = register(new Setting("DeathCoords", Boolean.valueOf(false), v -> (this.mode.getValue() == Mode.Respawn && ((Boolean)this.respawntrue.getValue()).booleanValue())));
-  
-  public Setting<Boolean> respawn = register(new Setting("Respawn", Boolean.valueOf(true), v -> (this.mode.getValue() == Mode.Respawn && ((Boolean)this.respawntrue.getValue()).booleanValue())));
-  
-  public Auto() {
-    super("Auto", "a", Module.Category.MISC, true, false, false);
-    setInstance();
-  }
-  
-  public static Auto getInstance() {
-    if (INSTANCE == null)
-      INSTANCE = new Auto(); 
-    return INSTANCE;
-  }
-  
-  private void setInstance() {
-    INSTANCE = this;
-  }
-  
-  public void onTick() {
-    if (!nullCheck() && mc.player.getHealth() <= ((Float)this.health.getValue()).floatValue()) {
-      mc.player.connection.sendPacket((Packet)new SPacketDisconnect((ITextComponent)new TextComponentString("AutoLogged")));
-      if (((Boolean)this.logout.getValue()).booleanValue())
-        disable(); 
-    } 
-  }
-  
-  @SubscribeEvent
-  public void onReceivePacket(PacketEvent.Receive event) {
-    SPacketBlockChange packet;
-    if (event.getPacket() instanceof SPacketBlockChange && ((Boolean)this.bed.getValue()).booleanValue() && (packet = (SPacketBlockChange)event.getPacket()).getBlockState().getBlock() == Blocks.BED && mc.player.getDistanceSqToCenter(packet.getBlockPosition()) <= MathUtil.square(((Float)this.range.getValue()).floatValue())) {
-      mc.player.connection.sendPacket((Packet)new SPacketDisconnect((ITextComponent)new TextComponentString("Logged")));
-      if (((Boolean)this.logout.getValue()).booleanValue())
-        disable(); 
-    } 
-  }
-  
-  @SubscribeEvent
-  public void sendPacket(GuiOpenEvent event) {
-    if (event.getGui() instanceof GuiDisconnected) {
-      updateLastConnectedServer();
-      GuiDisconnected disconnected = (GuiDisconnected)event.getGui();
-      event.setGui((GuiScreen)new GuiDisconnectedHook(disconnected));
-    } 
-  }
-  
-  @SubscribeEvent
-  public void onWorldUnload(WorldEvent.Unload event) {
-    updateLastConnectedServer();
-  }
-  
-  public void updateLastConnectedServer() {
-    ServerData data = mc.getCurrentServerData();
-    if (data != null)
-      serverData = data; 
-  }
-  
-  private class GuiDisconnectedHook extends GuiDisconnected {
-    private final Timer timer;
-    
-    public GuiDisconnectedHook(GuiDisconnected disconnected) {
-      super(disconnected.parentScreen, disconnected.reason, disconnected.message);
-      this.timer = new Timer();
-      this.timer.reset();
+public class Auto
+extends Module {
+    private static Auto INSTANCE = new Auto();
+    public Setting<Mode> mode = this.register(new Setting<Mode>("Mode", Mode.Reconnect));
+    private final Setting<Boolean> logtrue = this.register(new Setting<Boolean>("Log", Boolean.valueOf(false), v -> this.mode.getValue() == Mode.Log));
+    private final Setting<Float> health = this.register(new Setting<Object>("Health", Float.valueOf(16.0f), Float.valueOf(0.1f), Float.valueOf(36.0f), v -> this.mode.getValue() == Mode.Log && this.logtrue.getValue() != false));
+    private final Setting<Boolean> bed = this.register(new Setting<Object>("Beds", Boolean.valueOf(true), v -> this.mode.getValue() == Mode.Log && this.logtrue.getValue() != false));
+    private final Setting<Float> range = this.register(new Setting<Object>("BedRange", Float.valueOf(6.0f), Float.valueOf(0.1f), Float.valueOf(36.0f), v -> this.mode.getValue() == Mode.Log && this.logtrue.getValue() != false && this.bed.getValue() != false));
+    private final Setting<Boolean> logout = this.register(new Setting<Object>("LogoutOff", Boolean.valueOf(true), v -> this.mode.getValue() == Mode.Log && this.logtrue.getValue() != false));
+    private final Setting<Boolean> reconnecttrue = this.register(new Setting<Boolean>("Reconnect", Boolean.valueOf(false), v -> this.mode.getValue() == Mode.Reconnect && this.logtrue.getValue() == false));
+    private final Setting<Integer> delay = this.register(new Setting<Object>("Delay", Integer.valueOf(5), Integer.valueOf(1), Integer.valueOf(15), v -> this.mode.getValue() == Mode.Reconnect && this.reconnecttrue.getValue() != false));
+    private static ServerData serverData;
+    private final Setting<Boolean> respawntrue = this.register(new Setting<Object>("Respawn", Boolean.valueOf(false), v -> this.mode.getValue() == Mode.Respawn));
+    public Setting<Boolean> antiDeathScreen = this.register(new Setting<Object>("AntiDeathScreen", Boolean.valueOf(true), v -> this.mode.getValue() == Mode.Respawn && this.respawntrue.getValue() != false));
+    public Setting<Boolean> deathCoords = this.register(new Setting<Object>("DeathCoords", Boolean.valueOf(false), v -> this.mode.getValue() == Mode.Respawn && this.respawntrue.getValue() != false));
+    public Setting<Boolean> respawn = this.register(new Setting<Object>("Respawn", Boolean.valueOf(true), v -> this.mode.getValue() == Mode.Respawn && this.respawntrue.getValue() != false));
+
+    public Auto() {
+        super("Auto", "a", Module.Category.MISC, true, false, false);
+        this.setInstance();
     }
-    
-    public void updateScreen() {
-      if (this.timer.passedS(((Integer)Auto.this.delay.getValue()).intValue()))
-        this.mc.displayGuiScreen((GuiScreen)new GuiConnecting(this.parentScreen, this.mc, (Auto.serverData == null) ? this.mc.currentServerData : Auto.serverData)); 
+
+    public static Auto getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new Auto();
+        }
+        return INSTANCE;
     }
-    
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-      super.drawScreen(mouseX, mouseY, partialTicks);
-      String s = "Reconnecting in " + MathUtil.round(((((Integer)Auto.this.delay.getValue()).intValue() * 1000) - this.timer.getPassedTimeMs()) / 1000.0D, 1);
-      Auto.this.renderer.drawString(s, (this.width / 2 - Auto.this.renderer.getStringWidth(s) / 2), (this.height - 16), 16777215, true);
+
+    private void setInstance() {
+        INSTANCE = this;
     }
-  }
-  
-  @SubscribeEvent
-  public void onDisplayDeathScreen(GuiOpenEvent event) {
-    if (event.getGui() instanceof net.minecraft.client.gui.GuiGameOver) {
-      if (((Boolean)this.deathCoords.getValue()).booleanValue() && event.getGui() instanceof net.minecraft.client.gui.GuiGameOver)
-        Command.sendMessage(String.format("You died at x %d y %d z %d", new Object[] { Integer.valueOf((int)mc.player.posX), Integer.valueOf((int)mc.player.posY), Integer.valueOf((int)mc.player.posZ) })); 
-      if ((((Boolean)this.respawn.getValue()).booleanValue() && mc.player.getHealth() <= 0.0F) || (((Boolean)this.antiDeathScreen.getValue()).booleanValue() && mc.player.getHealth() > 0.0F)) {
-        event.setCanceled(true);
-        mc.player.respawnPlayer();
-      } 
-    } 
-  }
-  
-  public enum Mode {
-    Log, Reconnect, Respawn;
-  }
+
+    @Override
+    public void onTick() {
+        if (!Auto.nullCheck() && Auto.mc.player.getHealth() <= this.health.getValue().floatValue()) {
+            Auto.mc.player.connection.sendPacket((Packet)new SPacketDisconnect((ITextComponent)new TextComponentString("AutoLogged")));
+            if (this.logout.getValue().booleanValue()) {
+                this.disable();
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onReceivePacket(PacketEvent.Receive event) {
+        SPacketBlockChange packet;
+        if (event.getPacket() instanceof SPacketBlockChange && this.bed.getValue().booleanValue() && (packet = (SPacketBlockChange)event.getPacket()).getBlockState().getBlock() == Blocks.BED && Auto.mc.player.getDistanceSqToCenter(packet.getBlockPosition()) <= MathUtil.square(this.range.getValue().floatValue())) {
+            Auto.mc.player.connection.sendPacket((Packet)new SPacketDisconnect((ITextComponent)new TextComponentString("Logged")));
+            if (this.logout.getValue().booleanValue()) {
+                this.disable();
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void sendPacket(GuiOpenEvent event) {
+        if (event.getGui() instanceof GuiDisconnected) {
+            this.updateLastConnectedServer();
+            GuiDisconnected disconnected = (GuiDisconnected)event.getGui();
+            event.setGui((GuiScreen)new GuiDisconnectedHook(disconnected));
+        }
+    }
+
+    @SubscribeEvent
+    public void onWorldUnload(WorldEvent.Unload event) {
+        this.updateLastConnectedServer();
+    }
+
+    public void updateLastConnectedServer() {
+        ServerData data = mc.getCurrentServerData();
+        if (data != null) {
+            serverData = data;
+        }
+    }
+
+    @SubscribeEvent
+    public void onDisplayDeathScreen(GuiOpenEvent event) {
+        if (event.getGui() instanceof GuiGameOver) {
+            if (this.deathCoords.getValue().booleanValue() && event.getGui() instanceof GuiGameOver) {
+                Command.sendMessage(String.format("You died at x %d y %d z %d", (int)Auto.mc.player.posX, (int)Auto.mc.player.posY, (int)Auto.mc.player.posZ));
+            }
+            if (this.respawn.getValue() != false && Auto.mc.player.getHealth() <= 0.0f || this.antiDeathScreen.getValue().booleanValue() && Auto.mc.player.getHealth() > 0.0f) {
+                event.setCanceled(true);
+                Auto.mc.player.respawnPlayer();
+            }
+        }
+    }
+
+    public static enum Mode {
+        Log,
+        Reconnect,
+        Respawn;
+
+    }
+
+    private class GuiDisconnectedHook
+    extends GuiDisconnected {
+        private final Timer timer;
+
+        public GuiDisconnectedHook(GuiDisconnected disconnected) {
+            super(disconnected.parentScreen, disconnected.reason, disconnected.message);
+            this.timer = new Timer();
+            this.timer.reset();
+        }
+
+        public void updateScreen() {
+            if (this.timer.passedS(((Integer)Auto.this.delay.getValue()).intValue())) {
+                this.mc.displayGuiScreen((GuiScreen)new GuiConnecting(this.parentScreen, this.mc, serverData == null ? this.mc.currentServerData : serverData));
+            }
+        }
+
+        public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+            super.drawScreen(mouseX, mouseY, partialTicks);
+            String s = "Reconnecting in " + MathUtil.round((double)((long)((Integer)Auto.this.delay.getValue() * 1000) - this.timer.getPassedTimeMs()) / 1000.0, 1);
+            Auto.this.renderer.drawString(s, this.width / 2 - Auto.this.renderer.getStringWidth(s) / 2, this.height - 16, 0xFFFFFF, true);
+        }
+    }
 }
+

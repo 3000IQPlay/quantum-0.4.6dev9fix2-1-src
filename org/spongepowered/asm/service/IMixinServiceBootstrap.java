@@ -1,9 +1,13 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.service;
 
 public interface IMixinServiceBootstrap {
-  String getName();
-  
-  String getServiceClassName();
-  
-  void bootstrap();
+    public String getName();
+
+    public String getServiceClassName();
+
+    public void bootstrap();
 }
+

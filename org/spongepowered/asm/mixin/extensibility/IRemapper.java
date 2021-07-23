@@ -1,15 +1,19 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.mixin.extensibility;
 
 public interface IRemapper {
-  String mapMethodName(String paramString1, String paramString2, String paramString3);
-  
-  String mapFieldName(String paramString1, String paramString2, String paramString3);
-  
-  String map(String paramString);
-  
-  String unmap(String paramString);
-  
-  String mapDesc(String paramString);
-  
-  String unmapDesc(String paramString);
+    public String mapMethodName(String var1, String var2, String var3);
+
+    public String mapFieldName(String var1, String var2, String var3);
+
+    public String map(String var1);
+
+    public String unmap(String var1);
+
+    public String mapDesc(String var1);
+
+    public String unmapDesc(String var1);
 }
+

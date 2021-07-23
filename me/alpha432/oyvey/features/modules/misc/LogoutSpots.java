@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package me.alpha432.oyvey.features.modules.misc;
 
 import java.awt.Color;
@@ -19,185 +22,182 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-public class LogoutSpots extends Module {
-  private final Setting<Boolean> rainbow = register(new Setting("Rainbow", Boolean.valueOf(false)));
-  
-  private final Setting<Integer> rainbowhue = register(new Setting("Brightness", Integer.valueOf(255), Integer.valueOf(0), Integer.valueOf(255), v -> ((Boolean)this.rainbow.getValue()).booleanValue()));
-  
-  private final Setting<Integer> red = register(new Setting("Red", Integer.valueOf(255), Integer.valueOf(0), Integer.valueOf(255)));
-  
-  private final Setting<Integer> green = register(new Setting("Green", Integer.valueOf(0), Integer.valueOf(0), Integer.valueOf(255)));
-  
-  private final Setting<Integer> blue = register(new Setting("Blue", Integer.valueOf(0), Integer.valueOf(0), Integer.valueOf(255)));
-  
-  private final Setting<Integer> alpha = register(new Setting("Alpha", Integer.valueOf(255), Integer.valueOf(0), Integer.valueOf(255)));
-  
-  private final Setting<Boolean> scaleing = register(new Setting("Scale", Boolean.valueOf(false)));
-  
-  private final Setting<Float> scaling = register(new Setting("Size", Float.valueOf(4.0F), Float.valueOf(0.1F), Float.valueOf(20.0F)));
-  
-  private final Setting<Float> factor = register(new Setting("Factor", Float.valueOf(0.3F), Float.valueOf(0.1F), Float.valueOf(1.0F), v -> ((Boolean)this.scaleing.getValue()).booleanValue()));
-  
-  private final Setting<Boolean> smartScale = register(new Setting("SmartScale", Boolean.valueOf(false), v -> ((Boolean)this.scaleing.getValue()).booleanValue()));
-  
-  private final Setting<Boolean> rect = register(new Setting("Rectangle", Boolean.valueOf(true)));
-  
-  private final Setting<Boolean> coords = register(new Setting("Coords", Boolean.valueOf(true)));
-  
-  private final Setting<Boolean> notification = register(new Setting("Notify", Boolean.valueOf(true)));
-  
-  private final List<LogoutPos> spots = new CopyOnWriteArrayList<>();
-  
-  public Setting<Float> range = register(new Setting("Range", Float.valueOf(300.0F), Float.valueOf(50.0F), Float.valueOf(500.0F)));
-  
-  public Setting<Boolean> message = register(new Setting("Message", Boolean.valueOf(false)));
-  
-  public LogoutSpots() {
-    super("LogSpots", "ls", Module.Category.RENDER, true, false, false);
-  }
-  
-  public void onLogout() {
-    this.spots.clear();
-  }
-  
-  public void onDisable() {
-    this.spots.clear();
-  }
-  
-  public void onRender3D(Render3DEvent event) {
-    if (!this.spots.isEmpty()) {
-      List<LogoutPos> list = this.spots;
-      synchronized (list) {
-        this.spots.forEach(spot -> {
-              if (spot.getEntity() != null) {
-                AxisAlignedBB bb = RenderUtil.interpolateAxis(spot.getEntity().getEntityBoundingBox());
-                RenderUtil.drawBlockOutline(bb, ((Boolean)this.rainbow.getValue()).booleanValue() ? ColorUtil.rainbow(((Integer)this.rainbowhue.getValue()).intValue()) : new Color(((Integer)this.red.getValue()).intValue(), ((Integer)this.green.getValue()).intValue(), ((Integer)this.blue.getValue()).intValue(), ((Integer)this.alpha.getValue()).intValue()), 1.0F);
-                double x = interpolate((spot.getEntity()).lastTickPosX, (spot.getEntity()).posX, event.getPartialTicks()) - (mc.getRenderManager()).renderPosX;
-                double y = interpolate((spot.getEntity()).lastTickPosY, (spot.getEntity()).posY, event.getPartialTicks()) - (mc.getRenderManager()).renderPosY;
-                double z = interpolate((spot.getEntity()).lastTickPosZ, (spot.getEntity()).posZ, event.getPartialTicks()) - (mc.getRenderManager()).renderPosZ;
-                renderNameTag(spot.getName(), x, y, z, event.getPartialTicks(), spot.getX(), spot.getY(), spot.getZ());
-              } 
-            });
-      } 
-    } 
-  }
-  
-  public void onUpdate() {
-    if (!fullNullCheck())
-      this.spots.removeIf(spot -> (mc.player.getDistanceSq((Entity)spot.getEntity()) >= MathUtil.square(((Float)this.range.getValue()).floatValue()))); 
-  }
-  
-  @SubscribeEvent
-  public void onConnection(ConnectionEvent event) {
-    if (event.getStage() == 0) {
-      UUID uuid = event.getUuid();
-      EntityPlayer entity = mc.world.getPlayerEntityByUUID(uuid);
-      if (entity != null && ((Boolean)this.message.getValue()).booleanValue())
-        Command.sendMessagePh("§a" + entity.getName() + " just logged in" + (((Boolean)this.coords.getValue()).booleanValue() ? (" at (" + (int)entity.posX + ", " + (int)entity.posY + ", " + (int)entity.posZ + ")!") : "!"), ((Boolean)this.notification.getValue()).booleanValue()); 
-      this.spots.removeIf(pos -> pos.getName().equalsIgnoreCase(event.getName()));
-    } else if (event.getStage() == 1) {
-      EntityPlayer entity = event.getEntity();
-      UUID uuid = event.getUuid();
-      String name = event.getName();
-      if (((Boolean)this.message.getValue()).booleanValue())
-        Command.sendMessagePh("§c" + event.getName() + " just logged out" + (((Boolean)this.coords.getValue()).booleanValue() ? (" at (" + (int)entity.posX + ", " + (int)entity.posY + ", " + (int)entity.posZ + ")!") : "!"), ((Boolean)this.notification.getValue()).booleanValue()); 
-      if (name != null && entity != null && uuid != null)
-        this.spots.add(new LogoutPos(name, uuid, entity)); 
-    } 
-  }
-  
-  private void renderNameTag(String name, double x, double yi, double z, float delta, double xPos, double yPos, double zPos) {
-    double y = yi + 0.7D;
-    Entity camera = mc.getRenderViewEntity();
-    assert camera != null;
-    double originalPositionX = camera.posX;
-    double originalPositionY = camera.posY;
-    double originalPositionZ = camera.posZ;
-    camera.posX = interpolate(camera.prevPosX, camera.posX, delta);
-    camera.posY = interpolate(camera.prevPosY, camera.posY, delta);
-    camera.posZ = interpolate(camera.prevPosZ, camera.posZ, delta);
-    String displayTag = name + " XYZ: " + (int)xPos + ", " + (int)yPos + ", " + (int)zPos;
-    double distance = camera.getDistance(x + (mc.getRenderManager()).viewerPosX, y + (mc.getRenderManager()).viewerPosY, z + (mc.getRenderManager()).viewerPosZ);
-    int width = this.renderer.getStringWidth(displayTag) / 2;
-    double scale = (0.0018D + ((Float)this.scaling.getValue()).floatValue() * distance * ((Float)this.factor.getValue()).floatValue()) / 1000.0D;
-    if (distance <= 8.0D && ((Boolean)this.smartScale.getValue()).booleanValue())
-      scale = 0.0245D; 
-    if (!((Boolean)this.scaleing.getValue()).booleanValue())
-      scale = ((Float)this.scaling.getValue()).floatValue() / 100.0D; 
-    GlStateManager.pushMatrix();
-    RenderHelper.enableStandardItemLighting();
-    GlStateManager.enablePolygonOffset();
-    GlStateManager.doPolygonOffset(1.0F, -1500000.0F);
-    GlStateManager.disableLighting();
-    GlStateManager.translate((float)x, (float)y + 1.4F, (float)z);
-    GlStateManager.rotate(-(mc.getRenderManager()).playerViewY, 0.0F, 1.0F, 0.0F);
-    GlStateManager.rotate((mc.getRenderManager()).playerViewX, (mc.gameSettings.thirdPersonView == 2) ? -1.0F : 1.0F, 0.0F, 0.0F);
-    GlStateManager.scale(-scale, -scale, scale);
-    GlStateManager.disableDepth();
-    GlStateManager.enableBlend();
-    GlStateManager.enableBlend();
-    if (((Boolean)this.rect.getValue()).booleanValue())
-      RenderUtil.drawRect((-width - 2), -(this.renderer.getFontHeight() + 1), width + 2.0F, 1.5F, 1426063360); 
-    GlStateManager.disableBlend();
-    this.renderer.drawStringWithShadow(displayTag, -width, -(this.renderer.getFontHeight() - 1), ColorUtil.toRGBA(new Color(((Integer)this.red.getValue()).intValue(), ((Integer)this.green.getValue()).intValue(), ((Integer)this.blue.getValue()).intValue(), ((Integer)this.alpha.getValue()).intValue())));
-    camera.posX = originalPositionX;
-    camera.posY = originalPositionY;
-    camera.posZ = originalPositionZ;
-    GlStateManager.enableDepth();
-    GlStateManager.disableBlend();
-    GlStateManager.disablePolygonOffset();
-    GlStateManager.doPolygonOffset(1.0F, 1500000.0F);
-    GlStateManager.popMatrix();
-  }
-  
-  private double interpolate(double previous, double current, float delta) {
-    return previous + (current - previous) * delta;
-  }
-  
-  private static class LogoutPos {
-    private final String name;
-    
-    private final UUID uuid;
-    
-    private final EntityPlayer entity;
-    
-    private final double x;
-    
-    private final double y;
-    
-    private final double z;
-    
-    public LogoutPos(String name, UUID uuid, EntityPlayer entity) {
-      this.name = name;
-      this.uuid = uuid;
-      this.entity = entity;
-      this.x = entity.posX;
-      this.y = entity.posY;
-      this.z = entity.posZ;
+public class LogoutSpots
+extends Module {
+    private final Setting<Boolean> rainbow = this.register(new Setting<Boolean>("Rainbow", false));
+    private final Setting<Integer> rainbowhue = this.register(new Setting<Integer>("Brightness", Integer.valueOf(255), Integer.valueOf(0), Integer.valueOf(255), v -> this.rainbow.getValue()));
+    private final Setting<Integer> red = this.register(new Setting<Integer>("Red", 255, 0, 255));
+    private final Setting<Integer> green = this.register(new Setting<Integer>("Green", 0, 0, 255));
+    private final Setting<Integer> blue = this.register(new Setting<Integer>("Blue", 0, 0, 255));
+    private final Setting<Integer> alpha = this.register(new Setting<Integer>("Alpha", 255, 0, 255));
+    private final Setting<Boolean> scaleing = this.register(new Setting<Boolean>("Scale", false));
+    private final Setting<Float> scaling = this.register(new Setting<Float>("Size", Float.valueOf(4.0f), Float.valueOf(0.1f), Float.valueOf(20.0f)));
+    private final Setting<Float> factor = this.register(new Setting<Object>("Factor", Float.valueOf(0.3f), Float.valueOf(0.1f), Float.valueOf(1.0f), v -> this.scaleing.getValue()));
+    private final Setting<Boolean> smartScale = this.register(new Setting<Object>("SmartScale", Boolean.valueOf(false), v -> this.scaleing.getValue()));
+    private final Setting<Boolean> rect = this.register(new Setting<Boolean>("Rectangle", true));
+    private final Setting<Boolean> coords = this.register(new Setting<Boolean>("Coords", true));
+    private final Setting<Boolean> notification = this.register(new Setting<Boolean>("Notify", true));
+    private final List<LogoutPos> spots = new CopyOnWriteArrayList<LogoutPos>();
+    public Setting<Float> range = this.register(new Setting<Float>("Range", Float.valueOf(300.0f), Float.valueOf(50.0f), Float.valueOf(500.0f)));
+    public Setting<Boolean> message = this.register(new Setting<Boolean>("Message", false));
+
+    public LogoutSpots() {
+        super("LogSpots", "ls", Module.Category.RENDER, true, false, false);
     }
-    
-    public String getName() {
-      return this.name;
+
+    @Override
+    public void onLogout() {
+        this.spots.clear();
     }
-    
-    public UUID getUuid() {
-      return this.uuid;
+
+    @Override
+    public void onDisable() {
+        this.spots.clear();
     }
-    
-    public EntityPlayer getEntity() {
-      return this.entity;
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    @Override
+    public void onRender3D(Render3DEvent event) {
+        if (!this.spots.isEmpty()) {
+            List<LogoutPos> list;
+            List<LogoutPos> list2 = list = this.spots;
+            synchronized (list2) {
+                this.spots.forEach(spot -> {
+                    if (spot.getEntity() != null) {
+                        AxisAlignedBB bb = RenderUtil.interpolateAxis(spot.getEntity().getEntityBoundingBox());
+                        RenderUtil.drawBlockOutline(bb, this.rainbow.getValue() != false ? ColorUtil.rainbow(this.rainbowhue.getValue()) : new Color(this.red.getValue(), this.green.getValue(), this.blue.getValue(), this.alpha.getValue()), 1.0f);
+                        double x = this.interpolate(spot.getEntity().lastTickPosX, spot.getEntity().posX, event.getPartialTicks()) - LogoutSpots.mc.getRenderManager().renderPosX;
+                        double y = this.interpolate(spot.getEntity().lastTickPosY, spot.getEntity().posY, event.getPartialTicks()) - LogoutSpots.mc.getRenderManager().renderPosY;
+                        double z = this.interpolate(spot.getEntity().lastTickPosZ, spot.getEntity().posZ, event.getPartialTicks()) - LogoutSpots.mc.getRenderManager().renderPosZ;
+                        this.renderNameTag(spot.getName(), x, y, z, event.getPartialTicks(), spot.getX(), spot.getY(), spot.getZ());
+                    }
+                });
+            }
+        }
     }
-    
-    public double getX() {
-      return this.x;
+
+    @Override
+    public void onUpdate() {
+        if (!LogoutSpots.fullNullCheck()) {
+            this.spots.removeIf(spot -> LogoutSpots.mc.player.getDistanceSq((Entity)spot.getEntity()) >= MathUtil.square(this.range.getValue().floatValue()));
+        }
     }
-    
-    public double getY() {
-      return this.y;
+
+    @SubscribeEvent
+    public void onConnection(ConnectionEvent event) {
+        if (event.getStage() == 0) {
+            UUID uuid = event.getUuid();
+            EntityPlayer entity = LogoutSpots.mc.world.getPlayerEntityByUUID(uuid);
+            if (entity != null && this.message.getValue().booleanValue()) {
+                Command.sendMessagePh("\u00a7a" + entity.getName() + " just logged in" + (this.coords.getValue() != false ? " at (" + (int)entity.posX + ", " + (int)entity.posY + ", " + (int)entity.posZ + ")!" : "!"), this.notification.getValue());
+            }
+            this.spots.removeIf(pos -> pos.getName().equalsIgnoreCase(event.getName()));
+        } else if (event.getStage() == 1) {
+            EntityPlayer entity = event.getEntity();
+            UUID uuid = event.getUuid();
+            String name = event.getName();
+            if (this.message.getValue().booleanValue()) {
+                Command.sendMessagePh("\u00a7c" + event.getName() + " just logged out" + (this.coords.getValue() != false ? " at (" + (int)entity.posX + ", " + (int)entity.posY + ", " + (int)entity.posZ + ")!" : "!"), this.notification.getValue());
+            }
+            if (name != null && entity != null && uuid != null) {
+                this.spots.add(new LogoutPos(name, uuid, entity));
+            }
+        }
     }
-    
-    public double getZ() {
-      return this.z;
+
+    private void renderNameTag(String name, double x, double yi, double z, float delta, double xPos, double yPos, double zPos) {
+        double y = yi + 0.7;
+        Entity camera = mc.getRenderViewEntity();
+        assert (camera != null);
+        double originalPositionX = camera.posX;
+        double originalPositionY = camera.posY;
+        double originalPositionZ = camera.posZ;
+        camera.posX = this.interpolate(camera.prevPosX, camera.posX, delta);
+        camera.posY = this.interpolate(camera.prevPosY, camera.posY, delta);
+        camera.posZ = this.interpolate(camera.prevPosZ, camera.posZ, delta);
+        String displayTag = name + " XYZ: " + (int)xPos + ", " + (int)yPos + ", " + (int)zPos;
+        double distance = camera.getDistance(x + LogoutSpots.mc.getRenderManager().viewerPosX, y + LogoutSpots.mc.getRenderManager().viewerPosY, z + LogoutSpots.mc.getRenderManager().viewerPosZ);
+        int width = this.renderer.getStringWidth(displayTag) / 2;
+        double scale = (0.0018 + (double)this.scaling.getValue().floatValue() * (distance * (double)this.factor.getValue().floatValue())) / 1000.0;
+        if (distance <= 8.0 && this.smartScale.getValue().booleanValue()) {
+            scale = 0.0245;
+        }
+        if (!this.scaleing.getValue().booleanValue()) {
+            scale = (double)this.scaling.getValue().floatValue() / 100.0;
+        }
+        GlStateManager.pushMatrix();
+        RenderHelper.enableStandardItemLighting();
+        GlStateManager.enablePolygonOffset();
+        GlStateManager.doPolygonOffset((float)1.0f, (float)-1500000.0f);
+        GlStateManager.disableLighting();
+        GlStateManager.translate((float)((float)x), (float)((float)y + 1.4f), (float)((float)z));
+        GlStateManager.rotate((float)(-LogoutSpots.mc.getRenderManager().playerViewY), (float)0.0f, (float)1.0f, (float)0.0f);
+        GlStateManager.rotate((float)LogoutSpots.mc.getRenderManager().playerViewX, (float)(LogoutSpots.mc.gameSettings.thirdPersonView == 2 ? -1.0f : 1.0f), (float)0.0f, (float)0.0f);
+        GlStateManager.scale((double)(-scale), (double)(-scale), (double)scale);
+        GlStateManager.disableDepth();
+        GlStateManager.enableBlend();
+        GlStateManager.enableBlend();
+        if (this.rect.getValue().booleanValue()) {
+            RenderUtil.drawRect(-width - 2, -(this.renderer.getFontHeight() + 1), (float)width + 2.0f, 1.5f, 0x55000000);
+        }
+        GlStateManager.disableBlend();
+        this.renderer.drawStringWithShadow(displayTag, -width, -(this.renderer.getFontHeight() - 1), ColorUtil.toRGBA(new Color(this.red.getValue(), this.green.getValue(), this.blue.getValue(), this.alpha.getValue())));
+        camera.posX = originalPositionX;
+        camera.posY = originalPositionY;
+        camera.posZ = originalPositionZ;
+        GlStateManager.enableDepth();
+        GlStateManager.disableBlend();
+        GlStateManager.disablePolygonOffset();
+        GlStateManager.doPolygonOffset((float)1.0f, (float)1500000.0f);
+        GlStateManager.popMatrix();
     }
-  }
+
+    private double interpolate(double previous, double current, float delta) {
+        return previous + (current - previous) * (double)delta;
+    }
+
+    private static class LogoutPos {
+        private final String name;
+        private final UUID uuid;
+        private final EntityPlayer entity;
+        private final double x;
+        private final double y;
+        private final double z;
+
+        public LogoutPos(String name, UUID uuid, EntityPlayer entity) {
+            this.name = name;
+            this.uuid = uuid;
+            this.entity = entity;
+            this.x = entity.posX;
+            this.y = entity.posY;
+            this.z = entity.posZ;
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+        public UUID getUuid() {
+            return this.uuid;
+        }
+
+        public EntityPlayer getEntity() {
+            return this.entity;
+        }
+
+        public double getX() {
+            return this.x;
+        }
+
+        public double getY() {
+            return this.y;
+        }
+
+        public double getZ() {
+            return this.z;
+        }
+    }
 }
+

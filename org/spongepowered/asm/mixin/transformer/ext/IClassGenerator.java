@@ -1,5 +1,9 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.mixin.transformer.ext;
 
 public interface IClassGenerator {
-  byte[] generate(String paramString);
+    public byte[] generate(String var1);
 }
+

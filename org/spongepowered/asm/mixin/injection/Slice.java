@@ -1,13 +1,18 @@
+/*
+ * Decompiled with CFR 0.151.
+ */
 package org.spongepowered.asm.mixin.injection;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import org.spongepowered.asm.mixin.injection.At;
 
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(value=RetentionPolicy.RUNTIME)
 public @interface Slice {
-  String id() default "";
-  
-  At from() default @At("HEAD");
-  
-  At to() default @At("TAIL");
+    public String id() default "";
+
+    public At from() default @At(value="HEAD");
+
+    public At to() default @At(value="TAIL");
 }
+
